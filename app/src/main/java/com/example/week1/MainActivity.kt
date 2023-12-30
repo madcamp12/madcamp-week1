@@ -4,8 +4,15 @@ package com.example.week1
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
-
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.provider.ContactsContract
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +20,68 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            default_layout(title = "Main page")
+            default_layout(title = "MadCamp 1st Week")
+        }
+        requestContactsPermission()
+    }
+
+    private val CONTACTS_PERMISSION_REQUEST_CODE = 101
+    private fun requestContactsPermission() {
+        val permission = Manifest.permission.READ_CONTACTS
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // 권한이 이미 허용된 경우 연락처 가져오기
+                fetchContacts()
+            }
+            else -> {
+                // 권한 요청
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permission),
+                    CONTACTS_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CONTACTS_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                fetchContacts()
+            } else {
+                finish()
+            }
+        }
+    }
+
+    @SuppressLint("Range")
+    private fun fetchContacts() {
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                null,
+                null,
+                "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} ASC"
+            )
+
+            cursor?.use {
+                while (it.moveToNext()) {
+                    var name = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                    var number = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+
+                    add_contact(name, number)
+                }
+            }
         }
     }
 }
