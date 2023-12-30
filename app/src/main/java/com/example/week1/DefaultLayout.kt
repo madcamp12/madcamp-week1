@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
+import com.example.week1.isDarkMode
+
 private val Purple80 = Color(0xFFD0BCFF)
 private val PurpleGrey80 = Color(0xFFCCC2DC)
 private val Pink80 = Color(0xFFEFB8C8)

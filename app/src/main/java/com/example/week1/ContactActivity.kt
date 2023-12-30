@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +33,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 
 
 class ContactActivity : ComponentActivity() {
@@ -58,6 +61,7 @@ data class Contact(@DrawableRes val img : Int, val name: String, val digit: Stri
 @Composable
 fun contact_card(contact: Contact){
     var isExpanded by remember { mutableStateOf(false) }
+    var infoClicked by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Column{
@@ -111,8 +115,7 @@ fun contact_card(contact: Contact){
                 }
 
                 Button(onClick = {
-                    val intent = Intent(context, ContactInfoActivity::class.java)
-                    context.startActivity(intent)
+                    infoClicked = true
                 }){
                     Image(painter = painterResource(id = R.drawable.info), contentDescription = "info"
                         , modifier = Modifier
@@ -123,6 +126,49 @@ fun contact_card(contact: Contact){
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = Color.Gray, modifier = Modifier.fillMaxWidth().height(1.dp))
+        Divider(color = Color.Gray, modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp))
+    }
+
+    if(infoClicked) {
+        Dialog(onDismissRequest = { infoClicked = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+
+                Column {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row (horizontalArrangement = Arrangement.Center
+                        , modifier = Modifier.fillMaxWidth()){
+                        Image(
+                            painter = painterResource(id = contact.img), contentDescription = "image",
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .width(100.dp)
+                                .height(100.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = contact.name,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = contact.digit,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+            }
+        }
     }
 }
