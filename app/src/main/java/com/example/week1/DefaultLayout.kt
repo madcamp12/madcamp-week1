@@ -65,6 +65,7 @@ fun default_layout(title: String,
     var darkMode by remember { mutableStateOf(false) }
 
     Scaffold(
+        bottomBar = { BottomNavigationBar() },
         topBar = { MaterialTheme (colorScheme = if(darkMode) DarkColorScheme else LightColorScheme){
             TopAppBar(
                 colors = TopAppBarDefaults.smallTopAppBarColors(
@@ -91,7 +92,10 @@ fun default_layout(title: String,
             colorScheme = if(darkMode) DarkColorScheme else LightColorScheme
         ){
 
-            Surface (modifier = Modifier.padding(innerPadding).fillMaxWidth().fillMaxHeight(), content = content)
+            Surface (modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxWidth()
+                .fillMaxHeight(), content = content)
         }
     }
 }

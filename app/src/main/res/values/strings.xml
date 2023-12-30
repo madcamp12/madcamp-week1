@@ -4,4 +4,5 @@
     <string name="text_contact">Contact</string>
     <string name="text_gallery">Gallery</string>
     <string name="text_tap3">Tap3</string>
+    <string name="title_activity_memo">MemoActivity</string>
 </resources>
