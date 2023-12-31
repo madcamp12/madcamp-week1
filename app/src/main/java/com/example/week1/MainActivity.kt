@@ -13,9 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            default_layout(title = "Main page") {
-                Text(text = "Hello, World!")
-            }
+            default_layout(title = "Main page")
         }
     }
 }
