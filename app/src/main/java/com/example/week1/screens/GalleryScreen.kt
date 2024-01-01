@@ -12,11 +12,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -50,7 +53,7 @@ import java.io.InputStream
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun GalleryScreen(navController: NavController) {
 
@@ -189,7 +192,7 @@ fun GalleryScreen(navController: NavController) {
         }
     ) {
         var openDialog by remember { mutableStateOf(false) }
-        var dialogUri by remember { mutableStateOf<String?>(null) }
+        var dialogUri by remember { mutableStateOf<Int?>(null) }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
@@ -199,21 +202,26 @@ fun GalleryScreen(navController: NavController) {
 
                     val imgpath: String = context.filesDir.path + "/" + "${it+1}.jpg" // 내부 저장소에 저장되어 있는 이미지 경로
                     val bm = BitmapFactory.decodeFile(imgpath)
-                    if (openDialog and (dialogUri == "${it+1}.jpg")){
+                    if (openDialog and (dialogUri == it+1)){
                         Dialog(
                             onDismissRequest = { openDialog = false },
                             DialogProperties(
                                 usePlatformDefaultWidth = false
                             )
                         ) {
-                            GlideImage(
-                                imageModel = bm,
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable { openDialog = false },
-//                                    circularReveal= CircularReveal(duration = 250),
+                            val pagerState = rememberPagerState(
+                                initialPage = it,
+                                pageCount = { imageIndex }
                             )
+                            HorizontalPager(state = pagerState) { page ->
+                                GlideImage(
+                                    imageModel = BitmapFactory.decodeFile(context.filesDir.path + "/" + "${page+1}.jpg"),
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable { openDialog = false }
+                                )
+                            }
                         }
                     }
                     GlideImage(
@@ -224,7 +232,7 @@ fun GalleryScreen(navController: NavController) {
                             .clip(RectangleShape)
                             .clickable {
                                 openDialog = true
-                                dialogUri = "${it+1}.jpg"
+                                dialogUri = it + 1
                             },
 //                            circularReveal= CircularReveal(duration = 250),
                     )
