@@ -2,17 +2,15 @@ package com.example.week1.screens
 
 import android.content.Intent
 import android.net.Uri
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,18 +29,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.week1.R
-import com.example.week1.ui.theme.Week1Theme
+import com.example.week1.contacts
+import com.example.week1.Contact
 
 @Composable
 fun ContactScreen(navController: NavController) {
+    val contacts:List<Contact> = contacts.toList()
+
     LazyColumn{
-        items (100) { idx: Int ->
-            contact_card(contact = Contact(img = R.drawable.person, name = "김동하$idx", digit = "010-3404-4624"))
+        items (contacts) { contact ->
+            contact_card(contact = contact)
         }
     }
 }
-
-data class Contact(@DrawableRes val img : Int, val name: String, val digit: String)
 
 @Composable
 fun contact_card(contact: Contact){
