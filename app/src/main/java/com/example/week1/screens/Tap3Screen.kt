@@ -1,6 +1,7 @@
 package com.example.week1.screens
 
 import android.graphics.Color
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -41,42 +44,46 @@ fun Tap3Screen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         var content: Int by remember { mutableStateOf(0) }
         
-        Box (modifier = Modifier
+        Card (modifier = Modifier
             .fillMaxWidth(0.8f)
-            .fillMaxHeight(0.6f)
-            .background(color = androidx.compose.ui.graphics.Color.LightGray)){
-            Box(modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxHeight(0.6f),
-                contentAlignment = Alignment.Center) {
-                if (content == 0) {
-                    checkNumber()
-                }else if(content == 1){
-                    makeCandidates()
-                }else if(content == 2){
-                    selected_candidate()
+            .fillMaxHeight(0.6f),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+        ){
+            Box(modifier = Modifier.fillMaxSize()){
+                Box(modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxHeight(0.6f),
+                    contentAlignment = Alignment.Center) {
+                    if (content == 0) {
+                        checkNumber()
+                    }else if(content == 1){
+                        makeCandidates()
+                    }else if(content == 2){
+                        selected_candidate()
+                    }
                 }
-            }
 
-            Button(onClick = ff@{
-                if (content == 0){
-                    if(player_number == 0) {return@ff}
-                    content++
-                } else if(content == 1){
-                    content++
-                } else if (content == 2) {
-                    player_number = 0
-                    content = 0
-                }
-            }, modifier = Modifier
-                .padding(bottom = 15.dp)
-                .align(Alignment.BottomCenter)) {
-                if (content == 0) {
-                    Text("설정 완료")
-                } else if (content == 1) {
-                    Text("뽑기!")
-                } else if (content == 2) {
-                    Text("다시 하기")
+                Button(onClick = ff@{
+                    if (content == 0){
+                        if(player_number == 0) {return@ff}
+                        content++
+                    } else if(content == 1){
+                        content++
+                    } else if (content == 2) {
+                        player_number = 0
+                        content = 0
+                    }
+                }, modifier = Modifier
+                    .padding(bottom = 15.dp)
+                    .align(Alignment.BottomCenter)) {
+                    if (content == 0) {
+                        Text("설정 완료")
+                    } else if (content == 1) {
+                        Text("뽑기!")
+                    } else if (content == 2) {
+                        Text("다시 하기")
+                    }
                 }
             }
         }
@@ -88,7 +95,7 @@ fun Tap3Screen(navController: NavController) {
 fun checkNumber() {
     var number: Int by remember { mutableStateOf(player_number) }
 
-    Column(modifier = Modifier.background(color = androidx.compose.ui.graphics.Color.LightGray)){
+    Column(){
 
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -121,7 +128,7 @@ fun checkNumber() {
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(
-                        color = androidx.compose.ui.graphics.Color.Gray,
+                        color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape
                     )
                     .width(30.dp)
