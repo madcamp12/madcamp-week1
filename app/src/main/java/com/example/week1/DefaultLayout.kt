@@ -1,6 +1,7 @@
 package com.example.week1
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,24 +45,30 @@ import com.example.week1.screens.ContactScreen
 import com.example.week1.screens.GalleryScreen
 import com.example.week1.screens.Tap3Screen
 
-private val Purple80 = Color(0xFFD0BCFF)
-private val PurpleGrey80 = Color(0xFFCCC2DC)
-private val Pink80 = Color(0xFFEFB8C8)
-
-private val Purple40 = Color(0xFF6650a4)
-private val PurpleGrey40 = Color(0xFF625b71)
-private val Pink40 = Color(0xFF7D5260)
+private val LightGray = Color(0xFFAFAFAF)
+private val DarkGray = Color(0xFF6F6F6F)
+private val LightBlue = Color(0xFF3C68FF)
+private val DarkBlue = Color(0xFF182861)
+private val White = Color(0xFFFFFFFF)
+private val Black = Color(0xFF000000)
+private val PastelBlue_1 = Color(0xFFA5D8EA)
+private val PastelBle_2 = Color(0xFFA1B4FF)
+private val DarkPastelBlue_1 = Color(0xFF416072)
+private val DarkPastelBle_2 = Color(0xFF3D509B)
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DarkPastelBlue_1,
+    onPrimary = PastelBle_2,
+    secondary = DarkGray,
+    onSecondary = White,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = PastelBlue_1,
+    onPrimary = DarkPastelBle_2,
+    secondary = LightGray,
+    onSecondary = Black,
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -86,8 +95,8 @@ fun default_layout(title: String){
         topBar = { MaterialTheme (colorScheme = if(darkMode) DarkColorScheme else LightColorScheme){
             TopAppBar(
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = { Text("$title") },
                 actions = { Image(
@@ -106,7 +115,7 @@ fun default_layout(title: String){
 
         bottomBar = {
             MaterialTheme(colorScheme = if(darkMode) DarkColorScheme else LightColorScheme){
-                NavigationBar {
+                NavigationBar(modifier = Modifier.background(color = MaterialTheme.colorScheme.primary)) {
                     bottomNavigationItems().forEachIndexed { _, navigationItem ->
                         NavigationBarItem(
                             selected = navigationItem.route == currentDestination?.route,
@@ -127,7 +136,9 @@ fun default_layout(title: String){
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
+                            colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.onPrimary, selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = LightGray, unselectedTextColor = DarkGray, indicatorColor = MaterialTheme.colorScheme.primary)
                         )
                     }
                 }
@@ -135,7 +146,10 @@ fun default_layout(title: String){
         }
     ) { paddingValues ->
         MaterialTheme(colorScheme = if (darkMode) DarkColorScheme else LightColorScheme) {
-            Surface (modifier = Modifier.padding(paddingValues).fillMaxWidth().fillMaxHeight()){
+            Surface (modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxWidth()
+                .fillMaxHeight()){
                 NavHost(
                     navController = navController,
                     startDestination = Screens.Contact.route,
