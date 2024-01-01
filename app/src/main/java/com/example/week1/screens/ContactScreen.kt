@@ -1,8 +1,12 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.example.week1.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,9 +15,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,13 +41,52 @@ import com.example.week1.R
 import com.example.week1.contacts
 import com.example.week1.Contact
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactScreen(navController: NavController) {
-    val contacts:List<Contact> = contacts.toList()
+    val contact_list: List<Contact> = contacts.toList()
+    var search by remember { mutableStateOf("")}
 
-    LazyColumn{
-        items (contacts) { contact ->
-            contact_card(contact = contact)
+    Column() {
+        Row (modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically){
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 20.dp, end = 10.dp),
+                value = search,
+                placeholder = {Text("연락처 검색")},
+                onValueChange = {
+                    search = it
+                },
+            )
+
+            Image(painter = painterResource(id = R.drawable.x), contentDescription = "X mark",
+                modifier = Modifier
+                    .width(50.dp)
+                    .padding(end = 10.dp)
+                    .clickable { search = "" })
+        }
+
+        LazyColumn {
+            val selected_list:List<Contact> = contact_list.filter { contact -> contact.name.contains(search, ignoreCase = true) || contact.digit.contains(search, ignoreCase = true)}
+            var sticky_header:Char = '\n'
+
+            selected_list.forEach{contact ->
+                if(contact.name.first() != sticky_header){
+                    sticky_header = contact.name.first()
+
+                    stickyHeader{
+                        Text(text = contact.name.first().toString(),
+                            modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.secondary)
+                                .padding(start = 5.dp))
+                    }
+                }
+
+                item { contact_card(contact = contact) }
+            }
         }
     }
 }
