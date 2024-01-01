@@ -62,6 +62,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation ("androidx.compose.material:material:1.3.1")
     implementation ("androidx.compose.material:material-icons-extended:1.3.1")
+    implementation ("com.github.skydoves:landscapist-glide:1.4.7")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))

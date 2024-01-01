@@ -67,7 +67,7 @@ fun GalleryScreen(navController: NavController) {
     }
 
     fun generateFileName(i:Int): String {
-        val fileName = "${i}.jpg" // 이미지 인덱스를 사용하여 파일명 생성
+        val fileName = "${i + 1}.jpg" // 이미지 인덱스를 사용하여 파일명 생성
         return fileName
     }
 
@@ -92,10 +92,10 @@ fun GalleryScreen(navController: NavController) {
             val lastIndexFile = filesList.maxByOrNull { it.nameWithoutExtension.toIntOrNull() ?: 0 }
             lastIndexFile?.let {
                 val lastIndex = it.nameWithoutExtension.toIntOrNull() ?: 0
-                return lastIndex + 1
+                return lastIndex
             }
         }
-        return -1
+        return 0
     }
 
     var imageIndex by remember{
@@ -130,10 +130,7 @@ fun GalleryScreen(navController: NavController) {
             }
         }
     )
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(
@@ -159,7 +156,9 @@ fun GalleryScreen(navController: NavController) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 content = {
-                    items(imageIndex){
+                    items(imageIndex) xx@{
+                        if(imageIndex == 0) return@xx
+
                         val imgpath: String = context.filesDir.path + "/" + "${it+1}.jpg" // 내부 저장소에 저장되어 있는 이미지 경로
                         val bm = BitmapFactory.decodeFile(imgpath)
                         if (openDialog and (dialogUri == "${it+1}.jpg")){
@@ -195,5 +194,4 @@ fun GalleryScreen(navController: NavController) {
                 }
             )
         }
-    }
 }
