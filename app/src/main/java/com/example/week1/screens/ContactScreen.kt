@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.week1.R
@@ -50,12 +51,15 @@ fun ContactScreen(navController: NavController) {
     Column() {
         Row (modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp, bottom = 10.dp),
+            .padding(top = 10.dp),
             verticalAlignment = Alignment.CenterVertically){
+
+            Text(text = "")
+
             OutlinedTextField(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 20.dp, end = 10.dp),
+                    .padding(start = 20.dp, end = 10.dp, bottom = 10.dp),
                 value = search,
                 placeholder = {Text("연락처 검색")},
                 onValueChange = {
@@ -74,13 +78,23 @@ fun ContactScreen(navController: NavController) {
             val selected_list:List<Contact> = contact_list.filter { contact -> contact.name.contains(search, ignoreCase = true) || contact.digit.contains(search, ignoreCase = true)}
             var sticky_header:Char = '\n'
 
+            item{
+                Row(horizontalArrangement = Arrangement.End
+                , modifier = Modifier.padding(bottom = 10.dp, end = 15.dp)
+                        .fillMaxWidth()) {
+                    Text(text = "${selected_list.size}개의 연락처", fontSize = 12.sp)
+                }
+            }
+
             selected_list.forEach{contact ->
                 if(contact.name.first() != sticky_header){
                     sticky_header = contact.name.first()
 
                     stickyHeader{
                         Text(text = contact.name.first().toString(),
-                            modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.secondary)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(color = MaterialTheme.colorScheme.secondary)
                                 .padding(start = 5.dp))
                     }
                 }

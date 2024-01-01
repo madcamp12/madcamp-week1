@@ -167,67 +167,69 @@ fun GalleryScreen(navController: NavController) {
         }
     )
 
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        singlePhotoPickerLauncher.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    singlePhotoPickerLauncher.launch(
+                        PickVisualMediaRequest(
+                            ActivityResultContracts.PickVisualMedia.ImageOnly
                         )
-                    },
-                    shape = CircleShape
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        "",
+                    )
+                },
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    "",
+                )
+            }
+        }
+    ) {
+        var openDialog by remember { mutableStateOf(false) }
+        var dialogUri by remember { mutableStateOf<String?>(null) }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            content = {
+                items(imageIndex) xx@{
+                    if(imageIndex == 0) return@xx
+
+                    val imgpath: String = context.filesDir.path + "/" + "${it+1}.jpg" // 내부 저장소에 저장되어 있는 이미지 경로
+                    val bm = BitmapFactory.decodeFile(imgpath)
+                    if (openDialog and (dialogUri == "${it+1}.jpg")){
+                        Dialog(
+                            onDismissRequest = { openDialog = false },
+                            DialogProperties(
+                                usePlatformDefaultWidth = false
+                            )
+                        ) {
+                            GlideImage(
+                                imageModel = bm,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable { openDialog = false },
+//                                    circularReveal= CircularReveal(duration = 250),
+                            )
+                        }
+                    }
+                    GlideImage(
+                        imageModel = bm,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .aspectRatio(1f / 1f)
+                            .clip(RectangleShape)
+                            .clickable {
+                                openDialog = true
+                                dialogUri = "${it+1}.jpg"
+                            },
+//                            circularReveal= CircularReveal(duration = 250),
                     )
                 }
             }
-        ) {
-            var openDialog by remember { mutableStateOf(false) }
-            var dialogUri by remember { mutableStateOf<String?>(null) }
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                content = {
-                    items(imageIndex) xx@{
-                        if(imageIndex == 0) return@xx
-
-                        val imgpath: String = context.filesDir.path + "/" + "${it+1}.jpg" // 내부 저장소에 저장되어 있는 이미지 경로
-                        val bm = BitmapFactory.decodeFile(imgpath)
-                        if (openDialog and (dialogUri == "${it+1}.jpg")){
-                            Dialog(
-                                onDismissRequest = { openDialog = false },
-                                DialogProperties(
-                                    usePlatformDefaultWidth = false
-                                )
-                            ) {
-                                GlideImage(
-                                    imageModel = bm,
-                                    contentScale = ContentScale.Fit,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable { openDialog = false },
-//                                    circularReveal= CircularReveal(duration = 250),
-                                )
-                            }
-                        }
-                        GlideImage(
-                            imageModel = bm,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .aspectRatio(1f / 1f)
-                                .clip(RectangleShape)
-                                .clickable {
-                                    openDialog = true
-                                    dialogUri = "${it+1}.jpg"
-                                },
-//                            circularReveal= CircularReveal(duration = 250),
-                        )
-                    }
-                }
-            )
-        }
+        )
+    }
 }

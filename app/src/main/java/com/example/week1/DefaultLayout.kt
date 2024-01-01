@@ -61,6 +61,7 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = PastelBle_2,
     secondary = DarkGray,
     onSecondary = White,
+    tertiary = DarkBlue
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -68,6 +69,7 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = DarkPastelBle_2,
     secondary = LightGray,
     onSecondary = Black,
+    tertiary = LightBlue
 
 
     /* Other default colors to override
