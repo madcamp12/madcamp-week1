@@ -3,6 +3,8 @@ package com.example.week1.screens
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -118,16 +120,50 @@ fun GalleryScreen(navController: NavController) {
         }
     }
 
+//    이미지 회전정보 가져오기
+    fun getOrientationOfImage(uri: Uri): Int{
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val exif:ExifInterface? = try {
+            ExifInterface(inputStream!!)
+        }catch (e: IOException){
+            e.printStackTrace()
+            return -1
+        }
+        inputStream.close()
+
+//        회전된 각도 알아내기
+        val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        if (orientation != -1) {
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> return 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> return 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> return 270
+            }
+        }
+        return 0
+    }
+
+//    이미지 다시 회전시키기
+    @Throws(Exception::class)
+    fun getRotatedBitmap(bitmap: Bitmap?, degrees: Float): Bitmap? {
+        if (bitmap == null) return null
+        if (degrees == 0F) return bitmap
+        val m = Matrix()
+        m.setRotate(degrees, bitmap.width.toFloat() / 2, bitmap.height.toFloat() / 2)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, m, true)
+    }
+
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
+            val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
+            val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
 
-            bitmap?.let {
-                // 내부 저장소에 비트맵 저장
-                saveBitmapToInternalStorage(bitmap)
-                imageIndex = initializeImageIndex()
+            if (newBitmap != null) {
+                saveBitmapToInternalStorage(newBitmap)
             }
+            imageIndex = initializeImageIndex()
         }
     )
 
