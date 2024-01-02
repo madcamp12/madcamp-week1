@@ -146,7 +146,7 @@ fun default_layout(){
                                     restoreState = true
                                 }
                             },
-                            colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.onPrimary, selectedTextColor = MaterialTheme.colorScheme.primary,
+                            colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.onPrimary, selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                                 unselectedIconColor = LightGray, unselectedTextColor = DarkGray, indicatorColor = MaterialTheme.colorScheme.primary)
                         )
                     }
