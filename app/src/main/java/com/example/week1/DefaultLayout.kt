@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +29,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -106,17 +110,14 @@ fun default_layout(){
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
-                title = { Text("$title", style = typography.titleLarge) },
-                actions = { Image(
-                    painter = painterResource(id = R.drawable.darkmode),
-                    contentDescription = "dark mode",
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
-                        .padding(end = 10.dp)
-                        .clickable {
-                            darkMode = !darkMode
-                        })
+                title = { Text("$title", style = typography.bodyLarge) },
+                actions = {
+                    Icon(
+                        if(darkMode) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                        contentDescription = "dark or light",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(end = 5.dp).size(40.dp).clickable { darkMode = !darkMode }
+                    )
                 }
             )
         } },
@@ -128,7 +129,7 @@ fun default_layout(){
                         NavigationBarItem(
                             selected = navigationItem.route == currentDestination?.route,
                             label = {
-                                Text(text = navigationItem.label, style = typography.titleSmall)
+                                Text(text = navigationItem.label)
                             },
                             icon = {
                                 Icon(

@@ -8,18 +8,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontSynthesis
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-data class Contact(@DrawableRes val img : Int, val name: String, val digit: String)
+data class Contact(val name: String, val digit: String)
 
 var contacts: MutableSet<Contact> = mutableSetOf<Contact>()
 
 fun add_contact(name: String, digit: String){
     val new_digit = digit.replace("-", "", true)
 
-    contacts.add(Contact(img = R.drawable.person, name = name, digit = new_digit))
+    contacts.add(Contact(name = name, digit = new_digit))
 }
 private val dongle = FontFamily(
     Font(R.font.dongle_bold, FontWeight.Bold, FontStyle.Normal),
