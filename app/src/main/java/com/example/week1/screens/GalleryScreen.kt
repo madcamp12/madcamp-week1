@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -46,6 +47,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -502,43 +505,52 @@ fun GalleryScreen(navController: NavController) {
                 if(!(selectedIds.value.isNotEmpty()) && openDialog && (dialogId.value == image.id)){
                     Dialog(
                         onDismissRequest = { openDialog = false },
-                        DialogProperties(
-                            usePlatformDefaultWidth = false
-                        )
+//                        DialogProperties(
+//                            usePlatformDefaultWidth = false
+//                        )
                     ) {
                         val pagerState = rememberPagerState(
                             initialPage = index,
                             pageCount = { imgList.size }
                         )
                         HorizontalPager(state = pagerState) { page ->
-                            Column(
-                                modifier = Modifier.wrapContentSize()
-                            ) {
-                                AsyncImage(
-                                    model = BitmapFactory.decodeFile(context.filesDir.path + "/" + imgList.find { it.id == imgList[page].id }!!.fileName),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Fit,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { openDialog = false }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentSize(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
                                 )
-                                Row {
-                                    Text(
-                                        text = "${imgList.find { it.id == imgList[page].id }!!.datetime}",
-                                        color = Color.White,
+                            ) {
+                                Column(
+                                    modifier = Modifier.wrapContentSize()
+                                ) {
+                                    AsyncImage(
+                                        model = BitmapFactory.decodeFile(context.filesDir.path + "/" + imgList.find { it.id == imgList[page].id }!!.fileName),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Fit,
                                         modifier = Modifier
-                                            .weight(1f)
-                                            .padding(5.dp),
-                                        textAlign = TextAlign.Left
+                                            .fillMaxWidth()
+                                            .clickable { openDialog = false }
                                     )
-                                    Text(
-                                        text = "${page+1} / ${imgList.size}",
-                                        color = Color.White,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .padding(5.dp),
-                                        textAlign = TextAlign.Right
-                                    )
+                                    Row {
+                                        Text(
+                                            text = "${imgList.find { it.id == imgList[page].id }!!.datetime}",
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(5.dp),
+                                            textAlign = TextAlign.Left
+                                        )
+                                        Text(
+                                            text = "${page+1} / ${imgList.size}",
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(5.dp),
+                                            textAlign = TextAlign.Right
+                                        )
+                                    }
                                 }
                             }
                         }
