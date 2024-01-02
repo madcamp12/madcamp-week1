@@ -1,5 +1,6 @@
 package com.example.week1
 
+import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
@@ -11,14 +12,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-data class Contact(val name: String, val digit: String)
+data class Contact(val name: String, val digit: String, val img: String)
 
 var contacts: MutableSet<Contact> = mutableSetOf<Contact>()
 
-fun add_contact(name: String, digit: String){
+fun add_contact(name: String, digit: String, uri: String){
     val new_digit = digit.replace("-", "", true)
 
-    contacts.add(Contact(name = name, digit = new_digit))
+    contacts.add(Contact(name = name, digit = new_digit, img = uri))
 }
 private val dongle = FontFamily(
     Font(R.font.dongle_bold, FontWeight.Bold, FontStyle.Normal),

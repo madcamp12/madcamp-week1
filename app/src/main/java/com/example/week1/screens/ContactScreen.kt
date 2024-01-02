@@ -3,6 +3,8 @@
 package com.example.week1.screens
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Paint.Align
 import android.net.Uri
 import android.os.Build
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -135,12 +138,25 @@ fun contact_card(contact: Contact){
             .clickable { isExpanded = !isExpanded }) {
             Spacer(modifier = Modifier.width(5.dp))
 
-            Icon(
-                Icons.Filled.AccountCircle, contentDescription = "image",
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .size(40.dp)
-            )
+            if(contact.img == "None"){
+                Icon(
+                    Icons.Filled.AccountCircle, contentDescription = "image",
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .size(40.dp)
+                )
+            }else{
+                val path: Uri = Uri.parse(contact.img)
+                val inputStream = LocalContext.current.contentResolver.openInputStream(path)
+                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                Image(
+                    bitmap = bitmap_image.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                )
+            }
+
 
             Spacer(modifier = Modifier.width(5.dp))
 
@@ -207,13 +223,24 @@ fun contact_card(contact: Contact){
                     Row (horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                         , modifier = Modifier.fillMaxWidth()){
-                        Icon(
-                            Icons.Filled.AccountCircle, contentDescription = "image",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(100.dp)
-                        )
+                        if(contact.img == "None"){
+                            Icon(
+                                Icons.Filled.AccountCircle, contentDescription = "image",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier
+                                    .size(100.dp)
+                            )
+                        }else{
+                            val path: Uri = Uri.parse(contact.img)
+                            val inputStream = LocalContext.current.contentResolver.openInputStream(path)
+                            val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                            Image(
+                                bitmap = bitmap_image.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.size(100.dp).clip(CircleShape)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))

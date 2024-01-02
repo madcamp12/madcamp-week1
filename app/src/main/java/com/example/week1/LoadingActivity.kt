@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -108,10 +109,18 @@ class LoadingActivity : ComponentActivity() {
 
             cursor?.use {
                 while (it.moveToNext()) {
-                    var name = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-                    var number = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                    val name = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+                    val number = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                    val photoUri = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Photo.PHOTO_URI))
 
-                    add_contact(name, number)
+                    var uri: String
+                    if(photoUri == null){
+                        uri = "None"
+                    }else{
+                        uri = photoUri
+                    }
+
+                    add_contact(name, number, uri)
                 }
             }
         }
