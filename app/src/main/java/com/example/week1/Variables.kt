@@ -7,5 +7,7 @@ data class Contact(@DrawableRes val img : Int, val name: String, val digit: Stri
 var contacts: MutableSet<Contact> = mutableSetOf<Contact>()
 
 fun add_contact(name: String, digit: String){
-    contacts.add(Contact(img = R.drawable.person, name = name, digit = digit))
+    val new_digit = digit.replace("-", "", true)
+
+    contacts.add(Contact(img = R.drawable.person, name = name, digit = new_digit))
 }
