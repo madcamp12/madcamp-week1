@@ -25,18 +25,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -45,16 +39,13 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -71,14 +62,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -86,9 +74,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
@@ -108,7 +93,6 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Collections
 import java.util.Date
 import java.util.Locale
 
@@ -145,8 +129,8 @@ fun GalleryScreen(navController: NavController) {
         mutableStateListOf<ImgClass>()
     }
     for (i in 0..filesList.size-1){
-        imgList.add(ImgClass(i+1,filesList[i].name,formatLastModifiedDate(filesList[i].lastModified())))
-        Log.d("imgList","${i+1}, "+filesList[i].name + ", " + Date(filesList[i].lastModified()).toString())
+        imgList.add(ImgClass(filesList[i].name.substringBeforeLast('.').toInt(),filesList[i].name,formatLastModifiedDate(filesList[i].lastModified())))
+        Log.d("imgList","${filesList[i].name.substringBeforeLast('.').toInt()}, "+filesList[i].name + ", " + Date(filesList[i].lastModified()).toString())
     }
 
 
@@ -232,14 +216,18 @@ fun GalleryScreen(navController: NavController) {
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
-            val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
-            val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
+            if(imgList.map { it.fileName }.contains(getFileName(uri))){
+                Toast.makeText(context, "이미 추가된 사진입니다", Toast.LENGTH_SHORT).show()
+            }else{
+                val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
+                val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
+                val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
 
-            if (newBitmap != null) {
-                saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                if (newBitmap != null) {
+                    saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                }
+                imgList.add(ImgClass(getFileName(uri).substringBeforeLast('.').toInt(),getFileName(uri), LocalDateTime.now().format(formatter)))
             }
-            imgList.add(ImgClass(imgList.size+1,getFileName(uri), LocalDateTime.now().format(formatter)))
         }
     )
 
@@ -316,9 +304,55 @@ fun GalleryScreen(navController: NavController) {
         )
     }
 
+    fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        // Raw height and width of image
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
+    }
+
+    fun decodeSampledBitmapFromFile(
+        filePath: String,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Bitmap {
+        // First decode with inJustDecodeBounds=true to check dimensions
+        return BitmapFactory.Options().run {
+            inJustDecodeBounds = true
+            BitmapFactory.decodeFile(filePath, this)
+
+            // Calculate inSampleSize
+            inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
+
+            Log.d("insampleSize",inSampleSize.toString())
+            // Decode bitmap with inSampleSize set
+            inJustDecodeBounds = false
+
+            BitmapFactory.decodeFile(filePath, this)
+        }
+    }
+
+    val displayMetrics = context.resources.displayMetrics
+    val screenWidth = displayMetrics.widthPixels
+
     @Composable
     fun ImageItem(
         photo: ImgClass,
+        reqWidth: Int,
+        reqHeigiht: Int,
         inSelectionMode: Boolean,
         modifier: Modifier = Modifier
     ) {
@@ -335,8 +369,8 @@ fun GalleryScreen(navController: NavController) {
                 val roundedCornerShape by transition.animateDp(label = "corner") { sasd ->
                     if (inSelectionMode && selected) 16.dp else 0.dp
                 }
-                Image(
-                    painter = rememberAsyncImagePainter(BitmapFactory.decodeFile(context.filesDir.path + "/" + photo.fileName)),
+                AsyncImage(
+                    model = decodeSampledBitmapFromFile(context.filesDir.path + "/" + photo.fileName,reqWidth,reqHeigiht),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -345,6 +379,16 @@ fun GalleryScreen(navController: NavController) {
                         .aspectRatio(1f / 1f)
                         .clip(RoundedCornerShape(roundedCornerShape))
                 )
+//                Image(
+//                    painter = rememberAsyncImagePainter(decodeSampledBitmapFromFile(context.filesDir.path + "/" + photo.fileName,reqWidth,reqHeigiht)),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .matchParentSize()
+//                        .padding(padding)
+//                        .aspectRatio(1f / 1f)
+//                        .clip(RoundedCornerShape(roundedCornerShape))
+//                )
                 if (inSelectionMode) {
                     if (selected) {
                         val bgColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
@@ -373,7 +417,6 @@ fun GalleryScreen(navController: NavController) {
 
     var inSelectionMode by remember { mutableStateOf(false) }
     Scaffold(
-
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -388,6 +431,7 @@ fun GalleryScreen(navController: NavController) {
                             }
                         }
                         selectedIds= mutableStateOf(emptySet())
+                        Log.d("Delete",selectedIds.toString())
                         inSelectionMode = false
                     }else{
                         singlePhotoPickerLauncher.launch(
@@ -471,7 +515,7 @@ fun GalleryScreen(navController: NavController) {
                                 modifier = Modifier.wrapContentSize()
                             ) {
                                 AsyncImage(
-                                    model = BitmapFactory.decodeFile(context.filesDir.path + "/" + imgList.find { it.id == page+1 }!!.fileName),
+                                    model = BitmapFactory.decodeFile(context.filesDir.path + "/" + imgList.find { it.id == imgList[page].id }!!.fileName),
                                     contentDescription = null,
                                     contentScale = ContentScale.Fit,
                                     modifier = Modifier
@@ -480,7 +524,7 @@ fun GalleryScreen(navController: NavController) {
                                 )
                                 Row {
                                     Text(
-                                        text = "${imgList.find { it.id == page+1 }!!.datetime}",
+                                        text = "${imgList.find { it.id == imgList[page].id }!!.datetime}",
                                         color = Color.White,
                                         modifier = Modifier
                                             .weight(1f)
@@ -501,7 +545,7 @@ fun GalleryScreen(navController: NavController) {
                     }
                 }
                 ImageItem(
-                    image,inSelectionMode,
+                    image,screenWidth/3,screenWidth/3, inSelectionMode,
                     Modifier.combinedClickable (
                         onClick = {
                             if(selectedIds.value.isNotEmpty()){

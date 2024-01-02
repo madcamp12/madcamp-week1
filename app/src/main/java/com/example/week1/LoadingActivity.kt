@@ -60,8 +60,7 @@ class LoadingActivity : ComponentActivity() {
                 this,
                 permission
             ) == PackageManager.PERMISSION_GRANTED -> {
-//                Toast.makeText(this, "저장공간 접근이 허용되었습니다", Toast.LENGTH_SHORT).show()
-//                loadimages()
+
             }
             else -> {
                 // 권한 요청
