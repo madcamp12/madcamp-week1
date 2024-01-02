@@ -51,6 +51,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -318,7 +320,6 @@ fun GalleryScreen(navController: NavController) {
     fun ImageItem(
         photo: ImgClass,
         inSelectionMode: Boolean,
-        selected: Boolean,
         modifier: Modifier = Modifier
     ) {
         Surface(
@@ -326,12 +327,13 @@ fun GalleryScreen(navController: NavController) {
             tonalElevation = 3.dp
         ) {
             Box {
+                val selected by remember { derivedStateOf { selectedIds.value.contains(photo.id) } }
                 val transition = updateTransition(selected, label = "selected")
-                val padding by transition.animateDp(label = "padding") { selected ->
-                    if (selected) 10.dp else 0.dp
+                val padding by transition.animateDp(label = "padding") { asd ->
+                    if (inSelectionMode && selected) 10.dp else 0.dp
                 }
-                val roundedCornerShape by transition.animateDp(label = "corner") { selected ->
-                    if (selected) 16.dp else 0.dp
+                val roundedCornerShape by transition.animateDp(label = "corner") { sasd ->
+                    if (inSelectionMode && selected) 16.dp else 0.dp
                 }
                 Image(
                     painter = rememberAsyncImagePainter(BitmapFactory.decodeFile(context.filesDir.path + "/" + photo.fileName)),
@@ -369,30 +371,51 @@ fun GalleryScreen(navController: NavController) {
         }
     }
 
+    var inSelectionMode by remember { mutableStateOf(false) }
     Scaffold(
+
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    singlePhotoPickerLauncher.launch(
-                        PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly
+                    Log.d("inSelectionMode",inSelectionMode.toString())
+                    if (selectedIds.value.isNotEmpty()){
+                        for(i in selectedIds.value){
+                            val image = imgList.find { it.id == i }
+                            val fileToDelete = File(context.filesDir, image!!.fileName)
+                            imgList.remove(image)
+                            if(fileToDelete.delete()){
+                                Log.d("Delete","${i}, ${image.fileName}")
+                            }
+                        }
+                        selectedIds= mutableStateOf(emptySet())
+                        inSelectionMode = false
+                    }else{
+                        singlePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
-                    )
+                    }
                 },
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(
-                    Icons.Default.Add,
-                    "",
-                )
+                Log.d("inSelectionMode",inSelectionMode.toString())
+                if (selectedIds.value.isNotEmpty()){
+                    Icon(Icons.Default.Delete, "")
+                }else{
+                    Icon(
+                        Icons.Default.Add,
+                        "",
+                    )
+                }
             }
         }
     ) {
         var openDialog by remember { mutableStateOf(false) }
         var dialogId = remember { mutableStateOf<Int?>(null) }
-        var inSelectionMode by remember { mutableStateOf(false) }
+//        var inSelectionMode by remember { mutableStateOf(false) }
 //        val inSelectionMode by remember { derivedStateOf { selectedIds.value.isNotEmpty() } }
         val state = rememberLazyGridState()
         val autoScrollSpeed = remember { mutableStateOf(0f) }
@@ -408,6 +431,7 @@ fun GalleryScreen(navController: NavController) {
         BackHandler (enabled = (selectedIds.value.isNotEmpty())){
             selectedIds = mutableStateOf(emptySet())
             inSelectionMode = false
+            Log.d("inSelectionMode",inSelectionMode.toString())
             Log.d("BackHandler", "enabled, "+selectedIds.toString()+inSelectionMode)
         }
         LazyVerticalGrid(
@@ -430,7 +454,6 @@ fun GalleryScreen(navController: NavController) {
 
                 val imgpath: String = context.filesDir.path + "/" + image.fileName // 내부 저장소에 저장되어 있는 이미지 경로
                 val bm = BitmapFactory.decodeFile(imgpath)
-                val selected by remember { derivedStateOf { selectedIds.value.contains(image.id) } }
 
                 if(!(selectedIds.value.isNotEmpty()) && openDialog && (dialogId.value == image.id)){
                     Dialog(
@@ -478,7 +501,7 @@ fun GalleryScreen(navController: NavController) {
                     }
                 }
                 ImageItem(
-                    image,selectedIds.value.isNotEmpty(),selected,
+                    image,inSelectionMode,
                     Modifier.combinedClickable (
                         onClick = {
                             if(selectedIds.value.isNotEmpty()){
@@ -492,17 +515,17 @@ fun GalleryScreen(navController: NavController) {
                                 dialogId.value = image.id
                                 Log.d(
                                     "ImageItem",
-                                    "Clicked, ${image.fileName}, ${inSelectionMode}, ${selected}, ${selectedIds}"
+                                    "Clicked, ${image.fileName}, ${inSelectionMode}, ${selectedIds}"
                                 )
                             }
                         },
                         onLongClick = {
                             if(!selectedIds.value.isNotEmpty()){
                                 selectedIds.value += image.id
-//                                    inSelectionMode = true
+                                inSelectionMode = true
                                 Log.d(
                                     "ImageItem",
-                                    "LongClicked, ${image.fileName}, ${inSelectionMode}, ${selected}, ${selectedIds}"
+                                    "LongClicked, ${image.fileName}, ${inSelectionMode}, ${selectedIds}"
                                 )
                             }
                         }
