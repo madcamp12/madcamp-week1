@@ -1,5 +1,7 @@
 package com.example.week1
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +29,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +50,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.week1.screens.ContactScreen
 import com.example.week1.screens.GalleryScreen
 import com.example.week1.screens.Tap3Screen
+import com.example.week1.typography
+
 
 private val LightGray = Color(0xFFAFAFAF)
 private val DarkGray = Color(0xFF6F6F6F)
@@ -83,10 +91,12 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun default_layout(title: String){
+fun default_layout(){
 
+    var title:String by remember { mutableStateOf("내 연락처") }
     var darkMode by remember { mutableStateOf(false) }
 
     val navController = rememberNavController()
@@ -100,17 +110,14 @@ fun default_layout(title: String){
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
-                title = { Text("$title") },
-                actions = { Image(
-                    painter = painterResource(id = R.drawable.darkmode),
-                    contentDescription = "dark mode",
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
-                        .padding(end = 10.dp)
-                        .clickable {
-                            darkMode = !darkMode
-                        })
+                title = { Text("$title", style = typography.bodyLarge) },
+                actions = {
+                    Icon(
+                        if(darkMode) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                        contentDescription = "dark or light",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(end = 5.dp).size(40.dp).clickable { darkMode = !darkMode }
+                    )
                 }
             )
         } },
@@ -122,7 +129,7 @@ fun default_layout(title: String){
                         NavigationBarItem(
                             selected = navigationItem.route == currentDestination?.route,
                             label = {
-                                Text(navigationItem.label)
+                                Text(text = navigationItem.label)
                             },
                             icon = {
                                 Icon(
@@ -139,7 +146,7 @@ fun default_layout(title: String){
                                     restoreState = true
                                 }
                             },
-                            colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.onPrimary, selectedTextColor = MaterialTheme.colorScheme.primary,
+                            colors = NavigationBarItemDefaults.colors(selectedIconColor = MaterialTheme.colorScheme.onPrimary, selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                                 unselectedIconColor = LightGray, unselectedTextColor = DarkGray, indicatorColor = MaterialTheme.colorScheme.primary)
                         )
                     }
@@ -157,16 +164,19 @@ fun default_layout(title: String){
                     startDestination = Screens.Contact.route,
                 ) {
                     composable(Screens.Contact.route) {
+                        title = "내 연락처"
                         ContactScreen(
                             navController
                         )
                     }
                     composable(Screens.Gallery.route) {
+                        title = "사진"
                         GalleryScreen(
                             navController
                         )
                     }
                     composable(Screens.Tap3.route) {
+                        title = "제비뽑기"
                         Tap3Screen(
                             navController
                         )

@@ -3,7 +3,12 @@
 package com.example.week1.screens
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Paint.Align
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,10 +17,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
@@ -30,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,7 +54,9 @@ import androidx.navigation.NavController
 import com.example.week1.R
 import com.example.week1.contacts
 import com.example.week1.Contact
+import com.example.week1.typography
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactScreen(navController: NavController) {
@@ -52,7 +67,8 @@ fun ContactScreen(navController: NavController) {
         Row (modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp),
-            verticalAlignment = Alignment.CenterVertically){
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center){
 
             Text(text = "")
 
@@ -67,9 +83,10 @@ fun ContactScreen(navController: NavController) {
                 },
             )
 
-            Image(painter = painterResource(id = R.drawable.x), contentDescription = "X mark",
+            Icon(Icons.Filled.Close, contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier
-                    .width(50.dp)
+                    .size(50.dp)
                     .padding(end = 10.dp)
                     .clickable { search = "" })
         }
@@ -80,7 +97,8 @@ fun ContactScreen(navController: NavController) {
 
             item{
                 Row(horizontalArrangement = Arrangement.End
-                , modifier = Modifier.padding(bottom = 10.dp, end = 15.dp)
+                    , modifier = Modifier
+                        .padding(bottom = 10.dp, end = 15.dp)
                         .fillMaxWidth()) {
                     Text(text = "${selected_list.size}개의 연락처", fontSize = 12.sp)
                 }
@@ -105,6 +123,7 @@ fun ContactScreen(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun contact_card(contact: Contact){
     var isExpanded by remember { mutableStateOf(false) }
@@ -119,13 +138,25 @@ fun contact_card(contact: Contact){
             .clickable { isExpanded = !isExpanded }) {
             Spacer(modifier = Modifier.width(5.dp))
 
-            Image(
-                painter = painterResource(id = contact.img),
-                contentDescription = "test",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-            )
+            if(contact.img == "None"){
+                Icon(
+                    Icons.Filled.AccountCircle, contentDescription = "image",
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .size(40.dp)
+                )
+            }else{
+                val path: Uri = Uri.parse(contact.img)
+                val inputStream = LocalContext.current.contentResolver.openInputStream(path)
+                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                Image(
+                    bitmap = bitmap_image.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                )
+            }
+
 
             Spacer(modifier = Modifier.width(5.dp))
 
@@ -145,7 +176,7 @@ fun contact_card(contact: Contact){
                     val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
                     context.startActivity(intent)
                 }) {
-                    Image(painter = painterResource(id = R.drawable.call), contentDescription = "call"
+                    Icon(Icons.Filled.Call, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
                         , modifier = Modifier
                             .width(30.dp)
                             .height(30.dp))
@@ -155,7 +186,7 @@ fun contact_card(contact: Contact){
                     val intent = Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:${contact.digit}") }
                     context.startActivity(intent)
                 }) {
-                    Image(painter = painterResource(id = R.drawable.message), contentDescription = "message"
+                    Icon(Icons.Filled.Sms, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
                         , modifier = Modifier
                             .width(30.dp)
                             .height(30.dp))
@@ -164,7 +195,7 @@ fun contact_card(contact: Contact){
                 Button(onClick = {
                     infoClicked = true
                 }){
-                    Image(painter = painterResource(id = R.drawable.info), contentDescription = "info"
+                    Icon(Icons.Filled.Info, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
                         , modifier = Modifier
                             .width(30.dp)
                             .height(30.dp))
@@ -186,18 +217,30 @@ fun contact_card(contact: Contact){
                     .height(200.dp)
             ) {
 
-                Column {
+                Column (verticalArrangement = Arrangement.Center){
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Row (horizontalArrangement = Arrangement.Center
+                    Row (horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                         , modifier = Modifier.fillMaxWidth()){
-                        Image(
-                            painter = painterResource(id = contact.img), contentDescription = "image",
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .width(100.dp)
-                                .height(100.dp)
-                        )
+                        if(contact.img == "None"){
+                            Icon(
+                                Icons.Filled.AccountCircle, contentDescription = "image",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier
+                                    .size(100.dp)
+                            )
+                        }else{
+                            val path: Uri = Uri.parse(contact.img)
+                            val inputStream = LocalContext.current.contentResolver.openInputStream(path)
+                            val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                            Image(
+                                bitmap = bitmap_image.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.size(100.dp).clip(CircleShape)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
