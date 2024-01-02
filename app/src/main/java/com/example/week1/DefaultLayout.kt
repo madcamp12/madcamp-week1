@@ -1,5 +1,7 @@
 package com.example.week1
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +46,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.week1.screens.ContactScreen
 import com.example.week1.screens.GalleryScreen
 import com.example.week1.screens.Tap3Screen
+import com.example.week1.typography
+
 
 private val LightGray = Color(0xFFAFAFAF)
 private val DarkGray = Color(0xFF6F6F6F)
@@ -83,10 +87,12 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun default_layout(title: String){
+fun default_layout(){
 
+    var title:String by remember { mutableStateOf("내 연락처") }
     var darkMode by remember { mutableStateOf(false) }
 
     val navController = rememberNavController()
@@ -100,7 +106,7 @@ fun default_layout(title: String){
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
-                title = { Text("$title") },
+                title = { Text("$title", style = typography.titleLarge) },
                 actions = { Image(
                     painter = painterResource(id = R.drawable.darkmode),
                     contentDescription = "dark mode",
@@ -122,7 +128,7 @@ fun default_layout(title: String){
                         NavigationBarItem(
                             selected = navigationItem.route == currentDestination?.route,
                             label = {
-                                Text(navigationItem.label)
+                                Text(text = navigationItem.label, style = typography.titleSmall)
                             },
                             icon = {
                                 Icon(
@@ -157,16 +163,19 @@ fun default_layout(title: String){
                     startDestination = Screens.Contact.route,
                 ) {
                     composable(Screens.Contact.route) {
+                        title = "내 연락처"
                         ContactScreen(
                             navController
                         )
                     }
                     composable(Screens.Gallery.route) {
+                        title = "사진"
                         GalleryScreen(
                             navController
                         )
                     }
                     composable(Screens.Tap3.route) {
+                        title = "제비뽑기"
                         Tap3Screen(
                             navController
                         )

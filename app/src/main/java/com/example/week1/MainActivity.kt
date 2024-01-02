@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            default_layout(title = "MadCamp 1st Week")
+            default_layout()
         }
     }
 }
