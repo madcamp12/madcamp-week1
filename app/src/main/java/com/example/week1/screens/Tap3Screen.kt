@@ -1,6 +1,7 @@
 package com.example.week1.screens
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
@@ -58,7 +59,7 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 private var player_number: Int = 1
-private var candidates = mutableListOf<String>()
+private var candidates = MutableList(player_number) { "" }
 
 private val random = Random(seed = System.currentTimeMillis())
 
@@ -66,6 +67,7 @@ private val random = Random(seed = System.currentTimeMillis())
 @Composable
 fun Tap3Screen(navController: NavController) {
     player_number = 1
+    candidates = MutableList(player_number) { "" }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         var content: Int by remember { mutableStateOf(1) }
@@ -93,7 +95,6 @@ fun Tap3Screen(navController: NavController) {
                     if(content == 1){
                         content++
                     } else if (content == 2) {
-                        player_number = 1
                         content = 1
                     }
                 }, modifier = Modifier
@@ -114,7 +115,6 @@ fun Tap3Screen(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun makeCandidates(){
-    candidates = MutableList(player_number) { "" }
     var index by remember{ mutableStateOf(player_number) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -127,12 +127,16 @@ fun makeCandidates(){
             // make default candidates name
             if(candidates[idx] == ""){
                 candidates.set(idx, "후보 ${idx + 1}")
-            }else if (text != ""){
-                candidates.set(idx, text)
+            } else if (candidates[idx] != "후보 ${idx + 1}"){
+                if(candidates[idx] == "후보 ${idx + 2}"){
+                    candidates.set(idx, "후보 ${idx + 1}")
+                    text = ""
+                }else{
+                    text = candidates[idx]
+                }
             }
 
             Column {
-//                Row (
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxWidth()){
@@ -188,11 +192,12 @@ fun makeCandidates(){
                             return@yy
                         }
 
-                        player_number = ++index
-                        candidates.add("후보 $index")
                         coroutineScope.launch {
                             listState.animateScrollToItem(candidates.size - 1)
                         }
+                        player_number = ++index
+                        candidates.add("")
+
                     },
                     shape = RoundedCornerShape(5.dp),
                     modifier = Modifier
