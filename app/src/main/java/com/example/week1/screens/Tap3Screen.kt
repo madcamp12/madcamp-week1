@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
@@ -223,24 +224,32 @@ fun makeCandidates(){
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun selected_candidate(){
-    val selected_idx:Int = random.nextInt(player_number)
-    val selected_text:String = candidates.get(selected_idx)
-    var isVisible:Boolean by remember{ mutableStateOf(false) }
+    var selected_idx:Int = random.nextInt(player_number)
+    var selected_text:String by remember { mutableStateOf(candidates.get(selected_idx)) }
+    var isSelected:Boolean by remember{ mutableStateOf(false) }
+
+    val selected_modifier = Modifier.border(2.dp, MaterialTheme.colorScheme.onPrimary, RectangleShape)
 
     Box(modifier = Modifier.fillMaxSize()){
         Text(text = "선택 결과", modifier = Modifier.align(Alignment.TopCenter), style = typography.bodyLarge)
 
-        LaunchedEffect(Unit) {
-            delay(500) // 2초 지연
-            isVisible = true
-        }
 
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
+        Text(
+            text = "$selected_text",
+            style = typography.titleLarge,
+            color = if(isSelected) MaterialTheme.colorScheme.onPrimary else Color.Gray,
             modifier = Modifier.align(Alignment.Center)
-            ) {
-            Text(text = "$selected_text", style = typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary)
+        )
+
+
+        LaunchedEffect(Unit){
+            for (i in 100..700 step 50){
+                selected_idx = random.nextInt(player_number)
+                delay(i.toLong())
+                selected_text = candidates.get(selected_idx)
+            }
+
+            isSelected = true
         }
     }
 }
