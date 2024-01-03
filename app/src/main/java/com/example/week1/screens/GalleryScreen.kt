@@ -8,7 +8,6 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,7 +17,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +29,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -48,7 +45,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -85,11 +81,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import okio.IOException
@@ -136,7 +129,6 @@ fun GalleryScreen(navController: NavController) {
     }
     for (i in 0..filesList.size-1){
         imgList.add(ImgClass(filesList[i].name.substringBeforeLast('.').toInt(),filesList[i].name,formatLastModifiedDate(filesList[i].lastModified())))
-        Log.d("imgList","${filesList[i].name.substringBeforeLast('.').toInt()}, "+filesList[i].name + ", " + Date(filesList[i].lastModified()).toString())
     }
 
 
@@ -220,20 +212,22 @@ fun GalleryScreen(navController: NavController) {
     }
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri ->
-            if(imgList.map { it.fileName }.contains(getFileName(uri))){
-                Toast.makeText(context, "이미 추가된 사진입니다", Toast.LENGTH_SHORT).show()
-            }else{
-                if(uri is Uri){
-                    val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
-                    val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
-                    val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = { uris ->
+            for( uri in uris ){
+                if(imgList.map { it.fileName }.contains(getFileName(uri))){
+                    Toast.makeText(context, "이미 추가된 사진입니다", Toast.LENGTH_SHORT).show()
+                }else{
+                    if(uri is Uri){
+                        val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
+                        val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
+                        val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
 
-                    if (newBitmap != null) {
-                        saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                        if (newBitmap != null) {
+                            saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                        }
+                        imgList.add(ImgClass(getFileName(uri).substringBeforeLast('.').toInt(),getFileName(uri), LocalDateTime.now().format(formatter)))
                     }
-                    imgList.add(ImgClass(getFileName(uri).substringBeforeLast('.').toInt(),getFileName(uri), LocalDateTime.now().format(formatter)))
                 }
             }
         }
@@ -249,12 +243,9 @@ fun GalleryScreen(navController: NavController) {
         autoScrollThreshold: Float
     ) = pointerInput(Unit) {
         fun LazyGridState.gridItemKeyAtPosition(hitPoint: Offset): Int? {
-//            Log.d("HitPoint", "X: ${hitPoint.x}, Y: ${hitPoint.y}")
             val item = layoutInfo.visibleItemsInfo.find { itemInfo ->
-//                Log.d("ItemInfo", itemInfo.size.toIntRect().toString() + " ${hitPoint.round() - itemInfo.offset}")
                 itemInfo.size.toIntRect().contains(hitPoint.round() - itemInfo.offset)
             }
-//            Log.d("ItemInfo", item.toString()) // 아이템 정보 로그 출력
             return item?.key as? Int
         }
 
@@ -263,29 +254,23 @@ fun GalleryScreen(navController: NavController) {
         detectDragGesturesAfterLongPress(
             onDragStart = { offset ->
                 lazyGridState.gridItemKeyAtPosition(offset)?.let { key ->
-                    Log.d("onDragStart", "gridItemKeyAtPosition ${key}, "+selectedIds.toString())
                     if (!selectedIds.value.contains(key)) {
-                        Log.d("onDragStart", "if doesn't contain ${key}, "+selectedIds.toString())
                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                         initialKey = key
                         currentKey = key
                         selectedIds.value += key
                     }
                 }
-                Log.d("onDragStart", initialKey.toString()+selectedIds.toString())
             },
-//            onDragCancel = {
-//                initialKey = null
-//                autoScrollSpeed.value = 0f
-//                Log.d("onDragCancel", selectedIds.toString())
-//            },
+            onDragCancel = {
+                initialKey = null
+                autoScrollSpeed.value = 0f
+            },
             onDragEnd = {
                 initialKey = null
                 autoScrollSpeed.value = 0f
-                Log.d("onDragEnd", selectedIds.toString())
             },
             onDrag = { change, _ ->
-                Log.d("onDrag", initialKey.toString()+change.toString())
                 if (initialKey != null) {
                     val distFromBottom =
                         lazyGridState.layoutInfo.viewportSize.height - change.position.y
@@ -306,7 +291,6 @@ fun GalleryScreen(navController: NavController) {
                             currentKey = key
                         }
                     }
-                    Log.d("onDrag", selectedIds.toString())
                 }
             }
         )
@@ -345,7 +329,6 @@ fun GalleryScreen(navController: NavController) {
             // Calculate inSampleSize
             inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
 
-            Log.d("insampleSize",inSampleSize.toString())
             // Decode bitmap with inSampleSize set
             inJustDecodeBounds = false
 
@@ -368,7 +351,7 @@ fun GalleryScreen(navController: NavController) {
             modifier = modifier.aspectRatio(1f),
             tonalElevation = 3.dp
         ) {
-            Box {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
                 val selected by remember { derivedStateOf { selectedIds.value.contains(photo.id) } }
                 val transition = updateTransition(selected, label = "selected")
                 val padding by transition.animateDp(label = "padding") { asd ->
@@ -387,16 +370,6 @@ fun GalleryScreen(navController: NavController) {
                         .aspectRatio(1f / 1f)
                         .clip(RoundedCornerShape(roundedCornerShape))
                 )
-//                Image(
-//                    painter = rememberAsyncImagePainter(decodeSampledBitmapFromFile(context.filesDir.path + "/" + photo.fileName,reqWidth,reqHeigiht)),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .matchParentSize()
-//                        .padding(padding)
-//                        .aspectRatio(1f / 1f)
-//                        .clip(RoundedCornerShape(roundedCornerShape))
-//                )
                 if (inSelectionMode) {
                     if (selected) {
                         val bgColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
@@ -428,9 +401,7 @@ fun GalleryScreen(navController: NavController) {
             val image = imgList.find { it.id == i }
             val fileToDelete = File(context.filesDir, image!!.fileName)
             imgList.remove(image)
-            if(fileToDelete.delete()){
-                Log.d("Delete","${i}, ${image.fileName}")
-            }
+            fileToDelete.delete()
         }
 
         selectedIds = mutableStateOf(emptySet())
@@ -442,7 +413,6 @@ fun GalleryScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    Log.d("inSelectionMode",inSelectionMode.toString())
                     if (selectedIds.value.isNotEmpty()){
                         deleteAlert = true
                     }else{
@@ -457,7 +427,6 @@ fun GalleryScreen(navController: NavController) {
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Log.d("inSelectionMode",inSelectionMode.toString())
                 if (selectedIds.value.isNotEmpty()){
                     Icon(Icons.Default.Delete, "")
                 }else{
@@ -471,8 +440,6 @@ fun GalleryScreen(navController: NavController) {
     ) {
         var openDialog by remember { mutableStateOf(false) }
         var dialogId = remember { mutableStateOf<Int?>(null) }
-//        var inSelectionMode by remember { mutableStateOf(false) }
-//        val inSelectionMode by remember { derivedStateOf { selectedIds.value.isNotEmpty() } }
         val state = rememberLazyGridState()
         val autoScrollSpeed = remember { mutableStateOf(0f) }
 
@@ -482,10 +449,10 @@ fun GalleryScreen(navController: NavController) {
                     Icon(Icons.Default.Delete, "")
                 },
                 title = {
-                    Text(text = "삭제")
+                    Text(text = "삭제", color = MaterialTheme.colorScheme.onSecondary)
                 },
                 text = {
-                    Text(text = "${selectedIds.value.size}장의 사진을 삭제하겠습니까?")
+                    Text(text = "${selectedIds.value.size}장의 사진을 삭제하겠습니까?", color = MaterialTheme.colorScheme.onSecondary)
                 },
                 onDismissRequest = {
                     deleteAlert = false
@@ -498,7 +465,7 @@ fun GalleryScreen(navController: NavController) {
                             inSelectionMode = false
                         }
                     ) {
-                        Text("삭제")
+                        Text("삭제", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 dismissButton = {
@@ -507,7 +474,7 @@ fun GalleryScreen(navController: NavController) {
                             deleteAlert = false
                         }
                     ) {
-                        Text("취소")
+                        Text("취소", color = MaterialTheme.colorScheme.secondary)
                     }
                 }
             )
@@ -523,8 +490,6 @@ fun GalleryScreen(navController: NavController) {
         BackHandler (enabled = (selectedIds.value.isNotEmpty())){
             selectedIds = mutableStateOf(emptySet())
             inSelectionMode = false
-            Log.d("inSelectionMode",inSelectionMode.toString())
-            Log.d("BackHandler", "enabled, "+selectedIds.toString()+inSelectionMode)
         }
         LazyVerticalGrid(
             state = state,
@@ -550,9 +515,6 @@ fun GalleryScreen(navController: NavController) {
                 if(!(selectedIds.value.isNotEmpty()) && openDialog && (dialogId.value == image.id)){
                     Dialog(
                         onDismissRequest = { openDialog = false },
-//                        DialogProperties(
-//                            usePlatformDefaultWidth = false
-//                        )
                     ) {
                         val pagerState = rememberPagerState(
                             initialPage = index,
@@ -614,20 +576,12 @@ fun GalleryScreen(navController: NavController) {
                             }else{
                                 openDialog = true
                                 dialogId.value = image.id
-                                Log.d(
-                                    "ImageItem",
-                                    "Clicked, ${image.fileName}, ${inSelectionMode}, ${selectedIds}"
-                                )
                             }
                         },
                         onLongClick = {
                             if(!selectedIds.value.isNotEmpty()){
                                 selectedIds.value += image.id
                                 inSelectionMode = true
-                                Log.d(
-                                    "ImageItem",
-                                    "LongClicked, ${image.fileName}, ${inSelectionMode}, ${selectedIds}"
-                                )
                             }
                         }
                     )

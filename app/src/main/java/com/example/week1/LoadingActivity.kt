@@ -47,12 +47,10 @@ class LoadingActivity : ComponentActivity() {
         progressBar = findViewById(R.id.progressBar)
         progressBar.max = TOTAL_PROGRESS // Progress의 최대 값 설정
 
-//        requestStoragePermission()
         requestContactsPermission()
     }
 
     private val CONTACTS_PERMISSION_REQUEST_CODE = 101
-    private val STORAGE_PERMISSION_REQUEST_CODE = 100
     private fun requestContactsPermission() {
         val permission = Manifest.permission.READ_CONTACTS
         when {
@@ -70,26 +68,6 @@ class LoadingActivity : ComponentActivity() {
                     this,
                     arrayOf(permission),
                     CONTACTS_PERMISSION_REQUEST_CODE
-                )
-            }
-        }
-    }
-
-    private fun requestStoragePermission() {
-        val permission = Manifest.permission.READ_EXTERNAL_STORAGE
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED -> {
-
-            }
-            else -> {
-                // 권한 요청
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    STORAGE_PERMISSION_REQUEST_CODE
                 )
             }
         }
