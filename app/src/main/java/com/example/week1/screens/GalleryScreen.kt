@@ -432,6 +432,8 @@ fun GalleryScreen(navController: NavController) {
                 Log.d("Delete","${i}, ${image.fileName}")
             }
         }
+
+        selectedIds = mutableStateOf(emptySet())
     }
 
     var deleteAlert by remember { mutableStateOf(false) }

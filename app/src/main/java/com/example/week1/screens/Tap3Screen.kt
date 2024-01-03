@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -73,6 +74,7 @@ private val random = Random(seed = System.currentTimeMillis())
 fun Tap3Screen(navController: NavController) {
     player_number = 1
     candidates = MutableList(player_number) { "" }
+    var isSelected:Boolean by remember{ mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         var content: Int by remember { mutableStateOf(1) }
@@ -86,6 +88,11 @@ fun Tap3Screen(navController: NavController) {
             Box(modifier = Modifier
                 .fillMaxSize()
                 .padding(25.dp)){
+                if(isSelected){
+                    Image(painter = painterResource(id = R.drawable.party), contentDescription = null,
+                        modifier = Modifier.align(Alignment.Center).fillMaxWidth(), contentScale = ContentScale.Crop)
+                }
+
                 Box(modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxHeight(0.8f),
@@ -94,7 +101,30 @@ fun Tap3Screen(navController: NavController) {
                     if(content == 1){
                         makeCandidates()
                     }else if(content == 2){
-                        selected_candidate()
+                        var selected_idx:Int = random.nextInt(player_number)
+                        var selected_text:String by remember { mutableStateOf(candidates.get(selected_idx)) }
+
+                        Box(modifier = Modifier.fillMaxSize()){
+                            Text(text = "선택 결과", modifier = Modifier.align(Alignment.TopCenter), style = typography.bodyLarge)
+
+                            Text(
+                                text = "$selected_text",
+                                style = if(isSelected) typography.titleLarge else typography.titleMedium,
+                                color = if(isSelected) MaterialTheme.colorScheme.onPrimary else Color.Gray,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+
+
+                            LaunchedEffect(Unit){
+                                for (i in 100..700 step 50){
+                                    selected_idx = random.nextInt(player_number)
+                                    delay(i.toLong())
+                                    selected_text = candidates.get(selected_idx)
+                                }
+
+                                isSelected = true
+                            }
+                        }
                     }
                 }
 
@@ -102,6 +132,7 @@ fun Tap3Screen(navController: NavController) {
                     if(content == 1){
                         content++
                     } else if (content == 2) {
+                        isSelected = false
                         content = 1
                     }
                 }, modifier = Modifier
@@ -224,32 +255,5 @@ fun makeCandidates(){
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun selected_candidate(){
-    var selected_idx:Int = random.nextInt(player_number)
-    var selected_text:String by remember { mutableStateOf(candidates.get(selected_idx)) }
-    var isSelected:Boolean by remember{ mutableStateOf(false) }
 
-    val selected_modifier = Modifier.border(2.dp, MaterialTheme.colorScheme.onPrimary, RectangleShape)
-
-    Box(modifier = Modifier.fillMaxSize()){
-        Text(text = "선택 결과", modifier = Modifier.align(Alignment.TopCenter), style = typography.bodyLarge)
-
-
-        Text(
-            text = "$selected_text",
-            style = typography.titleLarge,
-            color = if(isSelected) MaterialTheme.colorScheme.onPrimary else Color.Gray,
-            modifier = Modifier.align(Alignment.Center)
-        )
-
-
-        LaunchedEffect(Unit){
-            for (i in 100..700 step 50){
-                selected_idx = random.nextInt(player_number)
-                delay(i.toLong())
-                selected_text = candidates.get(selected_idx)
-            }
-
-            isSelected = true
-        }
-    }
 }
