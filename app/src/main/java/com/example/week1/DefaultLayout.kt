@@ -2,15 +2,12 @@ package com.example.week1
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DarkMode
@@ -20,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -29,7 +25,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -50,7 +44,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.week1.screens.ContactScreen
 import com.example.week1.screens.GalleryScreen
 import com.example.week1.screens.Tap3Screen
-import com.example.week1.typography
 
 
 private val LightGray = Color(0xFFAFAFAF)
@@ -211,8 +204,8 @@ fun bottomNavigationItems() : List<BottomNavigationItem> {
             route = Screens.Gallery.route
         ),
         BottomNavigationItem(
-            label = "Tap3",
-            icon = ImageVector.vectorResource(id = R.drawable.baseline_window_24),
+            label = "Drawing",
+            icon = ImageVector.vectorResource(id = R.drawable.question_mark),
             route = Screens.Tap3.route
         )
     )
