@@ -4,6 +4,9 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -55,6 +58,7 @@ import androidx.navigation.NavController
 import com.example.week1.R
 import com.example.week1.typography
 import com.example.week1.ui.theme.Week1Theme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -78,7 +82,9 @@ fun Tap3Screen(navController: NavController) {
 //            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
 //            border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
         ){
-            Box(modifier = Modifier.fillMaxSize().padding(25.dp)){
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(25.dp)){
                 Box(modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxHeight(0.8f),
@@ -219,10 +225,22 @@ fun makeCandidates(){
 fun selected_candidate(){
     val selected_idx:Int = random.nextInt(player_number)
     val selected_text:String = candidates.get(selected_idx)
+    var isVisible:Boolean by remember{ mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()){
         Text(text = "선택 결과", modifier = Modifier.align(Alignment.TopCenter), style = typography.bodyLarge)
 
-        Text(text = "$selected_text", modifier = Modifier.align(Alignment.Center), style = typography.titleLarge)
+        LaunchedEffect(Unit) {
+            delay(500) // 2초 지연
+            isVisible = true
+        }
+
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
+            modifier = Modifier.align(Alignment.Center)
+            ) {
+            Text(text = "$selected_text", style = typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary)
+        }
     }
 }
