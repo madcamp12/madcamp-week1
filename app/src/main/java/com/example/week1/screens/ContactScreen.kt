@@ -46,7 +46,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -123,6 +126,16 @@ fun ContactScreen(navController: NavController) {
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview
+@Composable
+fun contact(){
+    Box(modifier = Modifier.background(Color.White)){
+        contact_card(contact = Contact("송지효","010-2998-4056","None"))
+    }
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun contact_card(contact: Contact){
@@ -130,20 +143,26 @@ fun contact_card(contact: Contact){
     var infoClicked by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    Column{
-        Spacer(modifier = Modifier.height(10.dp))
+    Column(
+        modifier = Modifier.clickable {
+            isExpanded = !isExpanded
+        }
+    ){
+        Spacer(modifier = Modifier.height(7.dp))
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable { isExpanded = !isExpanded }) {
-            Spacer(modifier = Modifier.width(5.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.width(15.dp))
 
             if(contact.img == "None"){
                 Icon(
                     Icons.Filled.AccountCircle, contentDescription = "image",
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(50.dp)
                 )
             }else{
                 val path: Uri = Uri.parse(contact.img)
@@ -153,57 +172,94 @@ fun contact_card(contact: Contact){
                 Image(
                     bitmap = bitmap_image.asImageBitmap(),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(3.dp)
+                        .clip(CircleShape)
                 )
             }
 
 
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             Column {
-                Text(text = contact.name)
+                Text(
+                    text = contact.name,
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = contact.digit)
+                Text(
+                    text = contact.digit,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
         if(isExpanded){
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 4.dp, end = 4.dp, top = 4.dp)
-                , horizontalArrangement = Arrangement.SpaceBetween ){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 70.dp, end = 22.dp, top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
 
-                Button(onClick = {
-                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
-                    context.startActivity(intent)
-                }) {
-                    Icon(Icons.Filled.Call, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
+//                Spacer(modifier = Modifier.width(75.dp))
+
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .size(50.dp)
+                    .clickable { val intent =
+                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
+                        context.startActivity(intent) }
+                ){
+                    Icon(Icons.Filled.Call, contentDescription = "call",
+                        tint = MaterialTheme.colorScheme.onPrimary
                         , modifier = Modifier
                             .width(30.dp)
-                            .height(30.dp))
+                            .height(30.dp)
+                    )
                 }
 
-                Button(onClick = {
-                    val intent = Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:${contact.digit}") }
-                    context.startActivity(intent)
-                }) {
-                    Icon(Icons.Filled.Sms, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .size(50.dp)
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("smsto:${contact.digit}")
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.Sms,
+                        contentDescription = "call",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
                             .width(30.dp)
-                            .height(30.dp))
+                            .height(30.dp)
+                    )
                 }
 
-                Button(onClick = {
-                    infoClicked = true
-                }){
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .size(50.dp)
+                    .clickable {
+                        infoClicked = true
+                    }
+                ) {
                     Icon(Icons.Filled.Info, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
                         , modifier = Modifier
                             .width(30.dp)
-                            .height(30.dp))
+                            .height(30.dp)
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(7.dp))
         Divider(color = Color.Gray, modifier = Modifier
             .fillMaxWidth()
             .height(1.dp))
@@ -238,7 +294,9 @@ fun contact_card(contact: Contact){
                             Image(
                                 bitmap = bitmap_image.asImageBitmap(),
                                 contentDescription = null,
-                                modifier = Modifier.size(100.dp).clip(CircleShape)
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
                             )
                         }
                     }
