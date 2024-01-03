@@ -192,11 +192,12 @@ fun makeCandidates(){
                             return@yy
                         }
 
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(candidates.size - 1)
-                        }
+
                         player_number = ++index
                         candidates.add("")
+                        coroutineScope.launch {
+                            listState.scrollToItem(player_number, 1)
+                        }
 
                     },
                     shape = RoundedCornerShape(5.dp),

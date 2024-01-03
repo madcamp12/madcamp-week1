@@ -56,12 +56,15 @@ import com.example.week1.contacts
 import com.example.week1.Contact
 import com.example.week1.typography
 
+
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ContactScreen(navController: NavController) {
     val contact_list: List<Contact> = contacts.toList()
     var search by remember { mutableStateOf("")}
+
+    var expanded by remember { mutableStateOf("") }
 
     Column() {
         Row (modifier = Modifier
@@ -117,7 +120,63 @@ fun ContactScreen(navController: NavController) {
                     }
                 }
 
-                item { contact_card(contact = contact) }
+                item {
+                    var isExpanded by remember { mutableStateOf(false) }
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if(expanded != contact.name && isExpanded){
+                                    expanded = contact.name
+                                }else{
+                                    expanded = contact.name
+                                    isExpanded = !isExpanded
+                                }
+                            }) {
+                            Spacer(modifier = Modifier.width(5.dp))
+
+                            if (contact.img == "None") {
+                                Icon(
+                                    Icons.Filled.AccountCircle, contentDescription = "image",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                )
+                            } else {
+                                val path: Uri = Uri.parse(contact.img)
+                                val inputStream =
+                                    LocalContext.current.contentResolver.openInputStream(path)
+                                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                                Image(
+                                    bitmap = bitmap_image.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                                )
+                            }
+
+
+                            Spacer(modifier = Modifier.width(5.dp))
+
+                            Column {
+                                Text(text = contact.name)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(text = contact.digit)
+                            }
+                        }
+
+                        if(isExpanded && expanded == contact.name) {
+                                expanded_card(contact)
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Divider(color = Color.Gray, modifier = Modifier
+                            .fillMaxWidth()
+                            .height(1.dp))
+                    }
+                }
             }
         }
     }
@@ -125,88 +184,47 @@ fun ContactScreen(navController: NavController) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun contact_card(contact: Contact){
-    var isExpanded by remember { mutableStateOf(false) }
-    var infoClicked by remember { mutableStateOf(false) }
+fun expanded_card(contact: Contact){
     val context = LocalContext.current
+    var infoClicked by remember { mutableStateOf(false) }
 
-    Column{
-        Spacer(modifier = Modifier.height(10.dp))
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 4.dp, end = 4.dp, top = 4.dp)
+        , horizontalArrangement = Arrangement.SpaceBetween ){
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable { isExpanded = !isExpanded }) {
-            Spacer(modifier = Modifier.width(5.dp))
-
-            if(contact.img == "None"){
-                Icon(
-                    Icons.Filled.AccountCircle, contentDescription = "image",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .size(40.dp)
-                )
-            }else{
-                val path: Uri = Uri.parse(contact.img)
-                val inputStream = LocalContext.current.contentResolver.openInputStream(path)
-                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
-
-                Image(
-                    bitmap = bitmap_image.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp).clip(CircleShape)
-                )
-            }
-
-
-            Spacer(modifier = Modifier.width(5.dp))
-
-            Column {
-                Text(text = contact.name)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = contact.digit)
-            }
-        }
-        if(isExpanded){
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 4.dp, end = 4.dp, top = 4.dp)
-                , horizontalArrangement = Arrangement.SpaceBetween ){
-
-                Button(onClick = {
-                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
-                    context.startActivity(intent)
-                }) {
-                    Icon(Icons.Filled.Call, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp))
-                }
-
-                Button(onClick = {
-                    val intent = Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:${contact.digit}") }
-                    context.startActivity(intent)
-                }) {
-                    Icon(Icons.Filled.Sms, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp))
-                }
-
-                Button(onClick = {
-                    infoClicked = true
-                }){
-                    Icon(Icons.Filled.Info, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp))
-                }
-            }
+        Button(onClick = {
+            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
+            context.startActivity(intent)
+        }) {
+            Icon(Icons.Filled.Call, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
+                , modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp))
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = Color.Gray, modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp))
+        Button(onClick = {
+            val intent = Intent(Intent.ACTION_SENDTO).apply { data = Uri.parse("smsto:${contact.digit}") }
+            context.startActivity(intent)
+        }) {
+            Icon(Icons.Filled.Sms, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
+                , modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp))
+        }
+
+        Button(onClick = {
+            infoClicked = true
+        }) {
+            Icon(
+                Icons.Filled.Info,
+                contentDescription = "call",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp)
+            )
+        }
     }
 
     if(infoClicked) {
