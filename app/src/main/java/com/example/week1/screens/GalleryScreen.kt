@@ -222,14 +222,16 @@ fun GalleryScreen(navController: NavController) {
             if(imgList.map { it.fileName }.contains(getFileName(uri))){
                 Toast.makeText(context, "이미 추가된 사진입니다", Toast.LENGTH_SHORT).show()
             }else{
-                val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
-                val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
-                val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
+                if(uri is Uri){
+                    val bitmap: Bitmap? = uri?.let { uriToBitmap(it) }
+                    val orientation = uri?.let { getOrientationOfImage(it).toFloat() }
+                    val newBitmap = orientation?.let { getRotatedBitmap(bitmap, it) }
 
-                if (newBitmap != null) {
-                    saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                    if (newBitmap != null) {
+                        saveBitmapToInternalStorage(newBitmap,getFileName(uri))
+                    }
+                    imgList.add(ImgClass(getFileName(uri).substringBeforeLast('.').toInt(),getFileName(uri), LocalDateTime.now().format(formatter)))
                 }
-                imgList.add(ImgClass(getFileName(uri).substringBeforeLast('.').toInt(),getFileName(uri), LocalDateTime.now().format(formatter)))
             }
         }
     )

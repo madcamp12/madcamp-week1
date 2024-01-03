@@ -21,11 +21,6 @@ fun add_contact(name: String, digit: String, uri: String){
 
     contacts.add(Contact(name = name, digit = new_digit, img = uri))
 }
-private val dongle = FontFamily(
-    Font(R.font.dongle_bold, FontWeight.Bold, FontStyle.Normal),
-    Font(R.font.dongle_regular, FontWeight.Normal, FontStyle.Normal),
-    Font(R.font.dongle_light, FontWeight.Light, FontStyle.Normal),
-)
 
 private val notosanskr = FontFamily(
     Font(R.font.notosanskr_bold, FontWeight.Bold, FontStyle.Normal),
@@ -36,17 +31,17 @@ private val notosanskr = FontFamily(
 @RequiresApi(Build.VERSION_CODES.O)
 val typography = Typography(
     titleLarge = TextStyle(
-        fontFamily = dongle,
+        fontFamily = notosanskr,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = dongle,
+        fontFamily = notosanskr,
         fontWeight = FontWeight.Normal,
         fontSize = 22.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = dongle,
+        fontFamily = notosanskr,
         fontWeight = FontWeight.Light,
         fontSize = 18.sp
     ),

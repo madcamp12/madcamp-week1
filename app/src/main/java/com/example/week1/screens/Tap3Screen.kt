@@ -1,6 +1,5 @@
 package com.example.week1.screens
 
-import android.graphics.Color
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -12,28 +11,38 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialogDefaults.shape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +54,7 @@ import androidx.navigation.NavController
 import com.example.week1.R
 import com.example.week1.typography
 import com.example.week1.ui.theme.Week1Theme
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 private var player_number: Int = 1
@@ -62,15 +72,15 @@ fun Tap3Screen(navController: NavController) {
         
         Card (modifier = Modifier
             .fillMaxWidth(0.8f)
-            .fillMaxHeight(0.6f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-            border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+            .fillMaxHeight(0.6f)
+//            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+//            border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
         ){
-            Box(modifier = Modifier.fillMaxSize()){
+            Box(modifier = Modifier.fillMaxSize().padding(25.dp)){
                 Box(modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxHeight(0.65f)
-                    .padding(start = 10.dp, end = 10.dp),
+                    .align(Alignment.TopCenter)
+                    .fillMaxHeight(0.8f),
+//                    .padding(top = 10.dp, start = 10.dp, end = 10.dp),
                     contentAlignment = Alignment.Center) {
                     if(content == 1){
                         makeCandidates()
@@ -87,7 +97,6 @@ fun Tap3Screen(navController: NavController) {
                         content = 1
                     }
                 }, modifier = Modifier
-                    .padding(bottom = 15.dp)
                     .align(Alignment.BottomCenter)) {
                     if (content == 1) {
                         Text("뽑기!")
@@ -108,10 +117,10 @@ fun makeCandidates(){
     candidates = MutableList(player_number) { "" }
     var index by remember{ mutableStateOf(player_number) }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
 
-    LazyColumn{
-
-
+    LazyColumn(state = listState){
         items(index){idx ->
             var text by remember { mutableStateOf("") }
 
@@ -123,15 +132,16 @@ fun makeCandidates(){
             }
 
             Column {
-                Row (
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+//                Row (
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxWidth()){
 
                     OutlinedTextField(
                         modifier = Modifier
                             .padding(bottom = 10.dp)
-                            .weight(1f),
+                            .height(60.dp)
+                            .fillMaxWidth(),
                         value = text,
                         onValueChange = {
                             text = it
@@ -139,7 +149,7 @@ fun makeCandidates(){
                                 candidates.set(idx, "후보 ${idx + 1}")
                             }else{
                                 candidates.set(idx, text)
-                            } },
+                            }},
                         label = {Text("후보 ${idx + 1}")}
                     )
                     Icon(
@@ -147,8 +157,9 @@ fun makeCandidates(){
                         tint = MaterialTheme.colorScheme.onPrimary,
                         contentDescription = null,
                         modifier = Modifier
+                            .align(Alignment.CenterEnd)
                             .size(40.dp)
-                            .padding(start = 10.dp)
+                            .padding(end = 10.dp)
                             .clickable {
                                 if (index == 1) {
                                     Toast
@@ -158,7 +169,8 @@ fun makeCandidates(){
                                     candidates.removeAt(idx)
                                     player_number = --index
                                 }
-                            })
+                            }
+                    )
                 }
             }
         }
@@ -169,20 +181,27 @@ fun makeCandidates(){
                 .padding(top = 10.dp),
                 horizontalArrangement = Arrangement.Center
                 ){
-                Button(onClick = yy@{
-                    if(index == 10) {
-                        Toast.makeText(context, "최대 인원은 10명입니다", Toast.LENGTH_SHORT).show()
-                        return@yy
-                    }
+                OutlinedButton(
+                    onClick = yy@{
+                        if(index == 10) {
+                            Toast.makeText(context, "최대 인원은 10명입니다", Toast.LENGTH_SHORT).show()
+                            return@yy
+                        }
 
-                    player_number = ++index
-                    candidates.add("후보 $index")
+                        player_number = ++index
+                        candidates.add("후보 $index")
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(candidates.size - 1)
+                        }
                     },
-                    modifier = Modifier.clip(CircleShape)) {
-
-                    Icon(Icons.Filled.AddCircleOutline, contentDescription = "add",
+                    shape = RoundedCornerShape(5.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "add",
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp))
+                        modifier = Modifier.size(30.dp))
                 }
             }
         }

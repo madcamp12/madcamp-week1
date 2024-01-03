@@ -124,7 +124,9 @@ fun default_layout(){
 
         bottomBar = {
             MaterialTheme(colorScheme = if(darkMode) DarkColorScheme else LightColorScheme){
-                NavigationBar(modifier = Modifier.background(color = MaterialTheme.colorScheme.primary)) {
+                NavigationBar(
+                    modifier = Modifier.background(color = MaterialTheme.colorScheme.primary)
+                ) {
                     bottomNavigationItems().forEachIndexed { _, navigationItem ->
                         NavigationBarItem(
                             selected = navigationItem.route == currentDestination?.route,
