@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">week1</string>
+    <string name="app_name">Babyroid</string>
     <string name="title_activity_bottom_navigation_bar">BottomNavigationBar</string>
     <string name="text_contact">Contact</string>
     <string name="text_gallery">Gallery</string>
