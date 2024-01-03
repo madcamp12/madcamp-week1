@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +58,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -420,6 +423,18 @@ fun GalleryScreen(navController: NavController) {
         }
     }
 
+    fun deleteImages() {
+        for(i in selectedIds.value){
+            val image = imgList.find { it.id == i }
+            val fileToDelete = File(context.filesDir, image!!.fileName)
+            imgList.remove(image)
+            if(fileToDelete.delete()){
+                Log.d("Delete","${i}, ${image.fileName}")
+            }
+        }
+    }
+
+    var deleteAlert by remember { mutableStateOf(false) }
     var inSelectionMode by remember { mutableStateOf(false) }
     Scaffold(
         floatingActionButton = {
@@ -427,17 +442,7 @@ fun GalleryScreen(navController: NavController) {
                 onClick = {
                     Log.d("inSelectionMode",inSelectionMode.toString())
                     if (selectedIds.value.isNotEmpty()){
-                        for(i in selectedIds.value){
-                            val image = imgList.find { it.id == i }
-                            val fileToDelete = File(context.filesDir, image!!.fileName)
-                            imgList.remove(image)
-                            if(fileToDelete.delete()){
-                                Log.d("Delete","${i}, ${image.fileName}")
-                            }
-                        }
-                        selectedIds= mutableStateOf(emptySet())
-                        Log.d("Delete",selectedIds.toString())
-                        inSelectionMode = false
+                        deleteAlert = true
                     }else{
                         singlePhotoPickerLauncher.launch(
                             PickVisualMediaRequest(
@@ -469,6 +474,42 @@ fun GalleryScreen(navController: NavController) {
         val state = rememberLazyGridState()
         val autoScrollSpeed = remember { mutableStateOf(0f) }
 
+        if (deleteAlert) {
+            AlertDialog(
+                icon = {
+                    Icon(Icons.Default.Delete, "")
+                },
+                title = {
+                    Text(text = "삭제")
+                },
+                text = {
+                    Text(text = "${selectedIds.value.size}장의 사진을 삭제하겠습니까?")
+                },
+                onDismissRequest = {
+                    deleteAlert = false
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            deleteImages()
+                            deleteAlert = false
+                            inSelectionMode = false
+                        }
+                    ) {
+                        Text("삭제")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            deleteAlert = false
+                        }
+                    ) {
+                        Text("취소")
+                    }
+                }
+            )
+        }
         LaunchedEffect(autoScrollSpeed.value) {
             if (autoScrollSpeed.value != 0f) {
                 while (isActive) {
