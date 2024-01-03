@@ -68,7 +68,8 @@ private val DarkColorScheme = darkColorScheme(
     primary = DarkPastelBlue_1,
     onPrimary = PastelBle_2,
     secondary = DarkGray,
-    onSecondary = Black,
+    onSecondary = White,
+    background = Black,
     tertiary = DarkBlue
 )
 
@@ -76,7 +77,8 @@ private val LightColorScheme = lightColorScheme(
     primary = PastelBlue_1,
     onPrimary = DarkPastelBle_2,
     secondary = LightGray,
-    onSecondary = White,
+    onSecondary = Black,
+    background = White,
     tertiary = LightBlue
 
 

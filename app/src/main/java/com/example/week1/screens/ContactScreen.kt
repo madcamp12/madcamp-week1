@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Paint.Align
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
@@ -25,7 +27,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -77,24 +81,31 @@ fun ContactScreen(navController: NavController) {
         ) {
 
             Text(text = "")
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp)){
 
-            OutlinedTextField(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 20.dp, end = 10.dp, bottom = 10.dp),
-                value = search,
-                placeholder = { Text("연락처 검색") },
-                onValueChange = {
-                    search = it
-                },
-            )
-
-            Icon(Icons.Filled.Close, contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(end = 10.dp)
-                    .clickable { search = "" })
+                OutlinedTextField(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(bottom = 10.dp)
+                        .height(50.dp)
+                        .fillMaxWidth(),
+                    value = search,
+                    placeholder = { Text("연락처 검색") },
+                    onValueChange = {
+                        search = it
+                    },
+                )
+                Icon(Icons.Filled.Close, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(40.dp)
+                        .padding(bottom = 10.dp, end = 10.dp)
+                        .clickable { search = "" })
+            }
         }
 
         LazyColumn {
@@ -121,13 +132,20 @@ fun ContactScreen(navController: NavController) {
                     sticky_header = contact.name.first()
 
                     stickyHeader {
-                        Text(
-                            text = contact.name.first().toString(),
-                            modifier = Modifier
-                                .fillMaxWidth()
+                        Row(
+                            horizontalArrangement = Arrangement.Start, modifier = Modifier
                                 .background(color = MaterialTheme.colorScheme.secondary)
-                                .padding(start = 5.dp)
-                        )
+                                .padding(bottom = 5.dp, top = 5.dp)
+                                .fillMaxWidth()
+                        ){
+                            Text(
+                                text = contact.name.first().toString(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp),
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
 
@@ -137,10 +155,10 @@ fun ContactScreen(navController: NavController) {
 
                     Column(
                         modifier = Modifier.clickable {
-                            if (isExpanded && contact.name != whatExpanded) {
-                                whatExpanded = contact.name
+                            if (isExpanded && contact.digit != whatExpanded) {
+                                whatExpanded = contact.digit
                             } else {
-                                whatExpanded = contact.name
+                                whatExpanded = contact.digit
                                 isExpanded = !isExpanded
                             }
                         }
@@ -192,7 +210,7 @@ fun ContactScreen(navController: NavController) {
                                 )
                             }
                         }
-                        if (isExpanded && whatExpanded == contact.name) {
+                        if (isExpanded && whatExpanded == contact.digit) {
                             expanded_card(contact)
                         }
                         Spacer(modifier = Modifier.height(7.dp))
@@ -298,58 +316,133 @@ fun expanded_card(contact: Contact) {
 
     if (infoClicked) {
         Dialog(onDismissRequest = { infoClicked = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
+            Box(modifier = Modifier
+                .height(300.dp)
+                .fillMaxWidth()){
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(30.dp))
+                        .fillMaxWidth()
+                        .height(240.dp)
+                        .align(Alignment.BottomCenter),
+                ) {
 
-                Column(verticalArrangement = Arrangement.Center) {
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(60.dp))
+                    Column(verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxHeight()) {
 
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (contact.img == "None") {
-                            Icon(
-                                Icons.Filled.AccountCircle, contentDescription = "image",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier
-                                    .size(100.dp)
-                            )
-                        } else {
-                            val path: Uri = Uri.parse(contact.img)
-                            val inputStream =
-                                LocalContext.current.contentResolver.openInputStream(path)
-                            val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Divider(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .width(25.dp)
+                                .height(2.dp)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                            Image(
-                                bitmap = bitmap_image.asImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(CircleShape)
-                            )
+                        Text(
+                            text = contact.name,
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = contact.digit,
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 70.dp, end = 70.dp, top = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier
+                                .padding(5.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .size(50.dp)
+                                .clickable {
+                                    val intent =
+                                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Filled.Call, contentDescription = "call",
+                                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
+                                        .width(30.dp)
+                                        .height(30.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(30.dp))
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier
+                                .padding(5.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .size(50.dp)
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("smsto:${contact.digit}")
+                                    }
+                                    context.startActivity(intent)
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Filled.Sms,
+                                    contentDescription = "call",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier
+                                        .width(30.dp)
+                                        .height(30.dp)
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.height(30.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = contact.name,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = contact.digit,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
                 }
+                if (contact.img == "None") {
+                    Icon(
+                        Icons.Filled.AccountCircle, contentDescription = "image",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(120.dp)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .align(Alignment.TopCenter)
+                    )
+                } else {
+                    val path: Uri = Uri.parse(contact.img)
+                    val inputStream =
+                        LocalContext.current.contentResolver.openInputStream(path)
+                    val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
 
+                    Box(modifier = Modifier
+                        .clip(CircleShape)
+                        .size(120.dp)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .align(Alignment.TopCenter),
+                    contentAlignment = Alignment.Center){
+                        Image(
+                            bitmap = bitmap_image.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(100.dp)
+                        )
+                    }
+                }
             }
         }
     }
