@@ -1,8 +1,12 @@
 package com.example.week1.screens
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -54,11 +58,12 @@ import androidx.navigation.NavController
 import com.example.week1.R
 import com.example.week1.typography
 import com.example.week1.ui.theme.Week1Theme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 private var player_number: Int = 1
-private var candidates = mutableListOf<String>()
+private var candidates = MutableList(player_number) { "" }
 
 private val random = Random(seed = System.currentTimeMillis())
 
@@ -66,6 +71,7 @@ private val random = Random(seed = System.currentTimeMillis())
 @Composable
 fun Tap3Screen(navController: NavController) {
     player_number = 1
+    candidates = MutableList(player_number) { "" }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
         var content: Int by remember { mutableStateOf(1) }
@@ -76,7 +82,9 @@ fun Tap3Screen(navController: NavController) {
 //            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
 //            border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
         ){
-            Box(modifier = Modifier.fillMaxSize().padding(25.dp)){
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(25.dp)){
                 Box(modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxHeight(0.8f),
@@ -93,7 +101,6 @@ fun Tap3Screen(navController: NavController) {
                     if(content == 1){
                         content++
                     } else if (content == 2) {
-                        player_number = 1
                         content = 1
                     }
                 }, modifier = Modifier
@@ -114,7 +121,6 @@ fun Tap3Screen(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun makeCandidates(){
-    candidates = MutableList(player_number) { "" }
     var index by remember{ mutableStateOf(player_number) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -127,12 +133,16 @@ fun makeCandidates(){
             // make default candidates name
             if(candidates[idx] == ""){
                 candidates.set(idx, "후보 ${idx + 1}")
-            }else if (text != ""){
-                candidates.set(idx, text)
+            } else if (candidates[idx] != "후보 ${idx + 1}"){
+                if(candidates[idx] == "후보 ${idx + 2}"){
+                    candidates.set(idx, "후보 ${idx + 1}")
+                    text = ""
+                }else{
+                    text = candidates[idx]
+                }
             }
 
             Column {
-//                Row (
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxWidth()){
@@ -188,11 +198,13 @@ fun makeCandidates(){
                             return@yy
                         }
 
+
                         player_number = ++index
-                        candidates.add("후보 $index")
+                        candidates.add("")
                         coroutineScope.launch {
-                            listState.animateScrollToItem(candidates.size - 1)
+                            listState.scrollToItem(player_number, 1)
                         }
+
                     },
                     shape = RoundedCornerShape(5.dp),
                     modifier = Modifier
@@ -213,10 +225,22 @@ fun makeCandidates(){
 fun selected_candidate(){
     val selected_idx:Int = random.nextInt(player_number)
     val selected_text:String = candidates.get(selected_idx)
+    var isVisible:Boolean by remember{ mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()){
         Text(text = "선택 결과", modifier = Modifier.align(Alignment.TopCenter), style = typography.bodyLarge)
 
-        Text(text = "$selected_text", modifier = Modifier.align(Alignment.Center), style = typography.titleLarge)
+        LaunchedEffect(Unit) {
+            delay(500) // 2초 지연
+            isVisible = true
+        }
+
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
+            modifier = Modifier.align(Alignment.Center)
+            ) {
+            Text(text = "$selected_text", style = typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary)
+        }
     }
 }

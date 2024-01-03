@@ -64,14 +64,17 @@ import com.example.week1.typography
 @Composable
 fun ContactScreen(navController: NavController) {
     val contact_list: List<Contact> = contacts.toList()
-    var search by remember { mutableStateOf("")}
+    var search by remember { mutableStateOf("") }
+    var whatExpanded: String by remember { mutableStateOf("") }
 
     Column() {
-        Row (modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center){
+            horizontalArrangement = Arrangement.Center
+        ) {
 
             Text(text = "")
 
@@ -80,7 +83,7 @@ fun ContactScreen(navController: NavController) {
                     .weight(1f)
                     .padding(start = 20.dp, end = 10.dp, bottom = 10.dp),
                 value = search,
-                placeholder = {Text("연락처 검색")},
+                placeholder = { Text("연락처 검색") },
                 onValueChange = {
                     search = it
                 },
@@ -95,177 +98,205 @@ fun ContactScreen(navController: NavController) {
         }
 
         LazyColumn {
-            val selected_list:List<Contact> = contact_list.filter { contact -> contact.name.contains(search, ignoreCase = true) || contact.digit.contains(search, ignoreCase = true)}
-            var sticky_header:Char = '\n'
+            val selected_list: List<Contact> = contact_list.filter { contact ->
+                contact.name.contains(
+                    search,
+                    ignoreCase = true
+                ) || contact.digit.contains(search, ignoreCase = true)
+            }
+            var sticky_header: Char = '\n'
 
-            item{
-                Row(horizontalArrangement = Arrangement.End
-                    , modifier = Modifier
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.End, modifier = Modifier
                         .padding(bottom = 10.dp, end = 15.dp)
-                        .fillMaxWidth()) {
+                        .fillMaxWidth()
+                ) {
                     Text(text = "${selected_list.size}개의 연락처", fontSize = 12.sp)
                 }
             }
 
-            selected_list.forEach{contact ->
-                if(contact.name.first() != sticky_header){
+            selected_list.forEach { contact ->
+                if (contact.name.first() != sticky_header) {
                     sticky_header = contact.name.first()
 
-                    stickyHeader{
-                        Text(text = contact.name.first().toString(),
+                    stickyHeader {
+                        Text(
+                            text = contact.name.first().toString(),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = MaterialTheme.colorScheme.secondary)
-                                .padding(start = 5.dp))
+                                .padding(start = 5.dp)
+                        )
                     }
                 }
 
-                item { contact_card(contact = contact) }
+                item {
+//                    contact_card(contact = contact)
+                    var isExpanded by remember { mutableStateOf(false) }
+
+                    Column(
+                        modifier = Modifier.clickable {
+                            if (isExpanded && contact.name != whatExpanded) {
+                                whatExpanded = contact.name
+                            } else {
+                                whatExpanded = contact.name
+                                isExpanded = !isExpanded
+                            }
+                        }
+                    ) {
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Spacer(modifier = Modifier.width(15.dp))
+
+                            if (contact.img == "None") {
+                                Icon(
+                                    Icons.Filled.AccountCircle, contentDescription = "image",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                )
+                            } else {
+                                val path: Uri = Uri.parse(contact.img)
+                                val inputStream =
+                                    LocalContext.current.contentResolver.openInputStream(path)
+                                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
+
+                                Image(
+                                    bitmap = bitmap_image.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .padding(3.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Column {
+                                Text(
+                                    text = contact.name,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = contact.digit,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        if (isExpanded && whatExpanded == contact.name) {
+                            expanded_card(contact)
+                        }
+                        Spacer(modifier = Modifier.height(7.dp))
+                        Divider(
+                            color = Color.Gray, modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                        )
+                    }
+
+                }
             }
         }
     }
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun contact(){
-    Box(modifier = Modifier.background(Color.White)){
-        contact_card(contact = Contact("송지효","010-2998-4056","None"))
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview
+//@Composable
+//fun contact(){
+//    Box(modifier = Modifier.background(Color.White)){
+//        contact_card(contact = Contact("송지효","010-2998-4056","None"))
+//    }
+//}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun contact_card(contact: Contact){
-    var isExpanded by remember { mutableStateOf(false) }
+fun expanded_card(contact: Contact) {
     var infoClicked by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier.clickable {
-            isExpanded = !isExpanded
-        }
-    ){
-        Spacer(modifier = Modifier.height(7.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.width(15.dp))
-
-            if(contact.img == "None"){
-                Icon(
-                    Icons.Filled.AccountCircle, contentDescription = "image",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .size(50.dp)
-                )
-            }else{
-                val path: Uri = Uri.parse(contact.img)
-                val inputStream = LocalContext.current.contentResolver.openInputStream(path)
-                val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
-
-                Image(
-                    bitmap = bitmap_image.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .padding(3.dp)
-                        .clip(CircleShape)
-                )
-            }
-
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column {
-                Text(
-                    text = contact.name,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = contact.digit,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-        if(isExpanded){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 70.dp, end = 22.dp, top = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 70.dp, end = 22.dp, top = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
 
 //                Spacer(modifier = Modifier.width(75.dp))
 
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .size(50.dp)
-                    .clickable { val intent =
-                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
-                        context.startActivity(intent) }
-                ){
-                    Icon(Icons.Filled.Call, contentDescription = "call",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                    )
-                }
-
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .size(50.dp)
-                    .clickable {
-                        val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("smsto:${contact.digit}")
-                        }
-                        context.startActivity(intent)
-                    }
-                ) {
-                    Icon(
-                        Icons.Filled.Sms,
-                        contentDescription = "call",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                    )
-                }
-
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .size(50.dp)
-                    .clickable {
-                        infoClicked = true
-                    }
-                ) {
-                    Icon(Icons.Filled.Info, contentDescription = "call", tint = MaterialTheme.colorScheme.onPrimary
-                        , modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                    )
-                }
+        Box(contentAlignment = Alignment.Center, modifier = Modifier
+            .padding(5.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .size(50.dp)
+            .clickable {
+                val intent =
+                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:${contact.digit}"))
+                context.startActivity(intent)
             }
+        ) {
+            Icon(
+                Icons.Filled.Call, contentDescription = "call",
+                tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(7.dp))
-        Divider(color = Color.Gray, modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp))
+        Box(contentAlignment = Alignment.Center, modifier = Modifier
+            .padding(5.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .size(50.dp)
+            .clickable {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("smsto:${contact.digit}")
+                }
+                context.startActivity(intent)
+            }
+        ) {
+            Icon(
+                Icons.Filled.Sms,
+                contentDescription = "call",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp)
+            )
+        }
+
+        Box(contentAlignment = Alignment.Center, modifier = Modifier
+            .padding(5.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .size(50.dp)
+            .clickable {
+                infoClicked = true
+            }
+        ) {
+            Icon(
+                Icons.Filled.Info,
+                contentDescription = "call",
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp)
+            )
+        }
     }
 
-    if(infoClicked) {
+    if (infoClicked) {
         Dialog(onDismissRequest = { infoClicked = false }) {
             Card(
                 modifier = Modifier
@@ -273,22 +304,25 @@ fun contact_card(contact: Contact){
                     .height(200.dp)
             ) {
 
-                Column (verticalArrangement = Arrangement.Center){
+                Column(verticalArrangement = Arrangement.Center) {
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Row (horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                        , modifier = Modifier.fillMaxWidth()){
-                        if(contact.img == "None"){
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (contact.img == "None") {
                             Icon(
                                 Icons.Filled.AccountCircle, contentDescription = "image",
                                 tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier
                                     .size(100.dp)
                             )
-                        }else{
+                        } else {
                             val path: Uri = Uri.parse(contact.img)
-                            val inputStream = LocalContext.current.contentResolver.openInputStream(path)
+                            val inputStream =
+                                LocalContext.current.contentResolver.openInputStream(path)
                             val bitmap_image: Bitmap = BitmapFactory.decodeStream(inputStream)
 
                             Image(
